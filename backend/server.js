@@ -1,16 +1,22 @@
-import express from "express";
-import dotenv from "dotenv";
-import cors from "cors";
-import sequelize from "./config/database.js";
-import User from "./models/User.js";
-import authRoutes from "./routes/authRouter.js";
+const express = require('express');
+const cors = require('cors');
+require('dotenv').config();
+
+const { sequelize } = require('./models');
+const authRoutes = require('./routes/authRoutes');
+const doctorRoutes = require('./routes/doctorRoutes');
+const appointmentRoutes = require('./routes/appointmentRoutes');
 
 
-dotenv.config();
+
 const app = express();
 app.use(cors());
 app.use(express.json());
 app.use("/api/auth", authRoutes);
+
+app.use('/auth', authRoutes);
+app.use('/doctors', doctorRoutes);
+app.use('/appointments', appointmentRoutes);
 
 app.get("/", (req, res) => res.send("API is running"));
 
@@ -20,4 +26,5 @@ sequelize.sync({ force: false })
 
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+app.listen(PORT, () => console.log(`server is running on http://localhost: ${PORT}`));
+

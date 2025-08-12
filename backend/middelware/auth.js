@@ -1,14 +1,20 @@
-import jwt from "jsonwebtoken";
+const jwt = require('jsonwebtoken');
+require('dotenv').config();
 
-export default function auth(req, res, next) {
-  const token = req.header("Authorization");
-  if (!token) return res.status(401).json({ msg: "No token" });
+const auth = (req, res, next) => {
+  const authHeader = req.headers['authorization'];
+  if (!authHeader || !authHeader.startsWith('Bearer '))
+    return res.status(403).json({ error: 'No token provided' });
 
-  try {
-    const decoded = jwt.verify(token.split(" ")[1], process.env.JWT_SECRET);
+  const token = authHeader.split(' ')[1];
+
+  jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+    if (err) return res.status(401).json({ error: 'Invalid token' });
+
     req.user = decoded;
     next();
-  } catch {
-    res.status(401).json({ msg: "Invalid token" });
-  }
-}
+  });
+};
+
+module.exports = auth;
+
