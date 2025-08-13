@@ -14,3 +14,4 @@ User.hasMany(Appointment, { foreignKey: 'patientId', as: 'appointments' });
 Doctor.hasMany(Appointment, { foreignKey: 'doctorId' });
 
 module.exports = { sequelize, User, Doctor, Appointment };
+
