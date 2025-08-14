@@ -8,6 +8,8 @@ const doctorRoutes = require('./routes/doctorRoutes');
 const appointmentRoutes = require('./routes/appointmentRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 
+const scheduleRoutes = require('./routes/scheduleRoutes');
+
 const app = express();
 app.use(cors());
 app.use(express.json());
@@ -17,6 +19,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/doctors", doctorRoutes);
 app.use("/api/appointments", appointmentRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/schedule", scheduleRoutes);
 
 app.get("/", (req, res) => res.send("API is running"));
 
