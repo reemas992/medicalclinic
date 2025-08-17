@@ -1,12 +1,26 @@
+// controllers/doctorController.js
 const { Doctor, User } = require('../models');
 
 exports.getDoctors = async (req, res) => {
-  const doctors = await Doctor.findAll({ include: [{ model: User, attributes: ['name', 'email'] }] });
-  res.json(doctors);
+  try {
+    const doctors = await Doctor.findAll({
+      include: [{ model: User, attributes: ['name', 'email'] }]
+    });
+    return res.json(doctors);
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
 };
 
 exports.addDoctor = async (req, res) => {
-  const { userId, specialty, bio, experience_years } = req.body;
-  const doctor = await Doctor.create({ userId, specialty, bio, experience_years });
-  res.json(doctor);
+  try {
+    const { userId, specialty, bio, experienceYears, phone } = req.body;
+    if (!userId || !specialty) {
+      return res.status(400).json({ error: 'userId and specialty are required' });
+    }
+    const doctor = await Doctor.create({ userId, specialty, bio, experienceYears, phone });
+    return res.json(doctor);
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
 };

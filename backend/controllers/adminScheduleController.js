@@ -1,6 +1,6 @@
 const { DoctorSchedule, Holiday } = require('../models');
 
-// إضافة جدول عمل لطبيب
+
 exports.createSchedule = async (req, res) => {
   try {
     const { doctorId, dayOfWeek, startTime, endTime } = req.body;
