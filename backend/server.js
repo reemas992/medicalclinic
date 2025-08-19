@@ -9,6 +9,7 @@ const appointmentRoutes = require('./routes/appointmentRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 const alertRoutes = require('./routes/alertRoutes');
 const scheduleRoutes = require('./routes/scheduleRoutes');
+const seed = require('./seeders/seed');
 
 const app = express();
 app.use(cors());
@@ -25,7 +26,11 @@ app.use("/api/schedule", scheduleRoutes);
 app.get("/", (req, res) => res.send("API is running"));
 
 sequelize.sync({ force: false })
-  .then(() => console.log("✅ Database Connected"))
+  .then(async () =>  {
+    console.log("calling Seed.js...");
+   // await seed();
+    console.log("Database Connected ✔️")
+  })
   .catch(err => console.error("❌ DB Error:", err));
 
 const PORT = process.env.PORT || 5000;
