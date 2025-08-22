@@ -1,17 +1,48 @@
-// models/Appointment.js
-const { DataTypes } = require('sequelize');
-const sequelize = require('../config/db');
+const { DataTypes } = require("sequelize");
+const sequelize = require("../config/db");
 
-const Appointment = sequelize.define('Appointment', {
-  doctorId: { type: DataTypes.INTEGER, allowNull: false },
-  patientId: { type: DataTypes.INTEGER, allowNull: false },
-  date: { type: DataTypes.DATEONLY, allowNull: false }, // yyyy-mm-dd
-  startTime: { type: DataTypes.TIME, allowNull: false }, // HH:mm
-  endTime: { type: DataTypes.TIME, allowNull: false },   // HH:mm
+const Appointment = sequelize.define("Appointment", {
+  date: {
+    type: DataTypes.DATE,
+    allowNull: false
+  },
   status: {
-    type: DataTypes.ENUM('scheduled', 'cancelled', 'completed'),
-    defaultValue: 'scheduled'
+    type: DataTypes.ENUM("scheduled", "completed", "cancelled", "no_show"),
+    defaultValue: "scheduled"
+  },
+  patientId: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    references: {
+      model: 'Users',
+      key: 'id'
+    }
+  },
+  doctorId: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    references: {
+      model: 'Doctors',
+      key: 'id'
+    }
+  },
+  notes: {
+    type: DataTypes.TEXT,
+    allowNull: true
   }
-}, { timestamps: true });
+}, {
+  timestamps: true,
+  indexes: [
+    {
+      fields: ['patientId']
+    },
+    {
+      fields: ['doctorId']
+    },
+    {
+      fields: ['date']
+    }
+  ]
+});
 
 module.exports = Appointment;

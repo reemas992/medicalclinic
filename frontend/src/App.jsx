@@ -1,22 +1,55 @@
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import Home from './pages/Home';
+import Login from './pages/Login';
+import Register from './pages/Register';
+import Doctors from './pages/Doctors';
+import Contact from './pages/Contact';
+import Jobs from './pages/Jobs';
+import Evaluations from './pages/Evaluations';
+import AdminDashboard from './pages/admin/AdminDashboard';
+import DoctorDashboard from './pages/doctor/DoctorDashboard';
+import PatientDashboard from './pages/patient/PatientDashboard';
+import ProtectedRoute from './routes/protectedRoute';
+import AppNavbar from './components/AppNavbar';
+import Footer from './components/Footer';
 
-import React, { useState } from "react";
-import axios from "axios";
-
-export default function App() {
-  const [form, setForm] = useState({ name: "", email: "", password: "" });
-
-  const register = async () => {
-    const res = await axios.post("http://localhost:5000/api/register", form);
-    console.log(res.data);
-  };
-
+function App() {
   return (
-    <div className="container mt-5">
-      <h2>Register</h2>
-      <input placeholder="Name" onChange={e => setForm({ ...form, name: e.target.value })} />
-      <input placeholder="Email" onChange={e => setForm({ ...form, email: e.target.value })} />
-      <input type="password" placeholder="Password" onChange={e => setForm({ ...form, password: e.target.value })} />
-      <button onClick={register} className="btn btn-primary">Register</button>
-    </div>
+    <Router>
+      <AppNavbar />
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/doctors" element={<Doctors />} />
+        <Route path="/contact" element={<Contact />} />
+        <Route path="/jobs" element={<Jobs />} />
+        <Route path="/evaluations" element={
+          <ProtectedRoute>
+            <Evaluations />
+          </ProtectedRoute>
+        } />
+        {/* Dashboards */}
+        <Route path="/admin" element={
+          <ProtectedRoute role="admin">
+            <AdminDashboard />
+          </ProtectedRoute>
+        } />
+        <Route path="/doctor" element={
+          <ProtectedRoute role="doctor">
+            <DoctorDashboard />
+          </ProtectedRoute>
+        } />
+        <Route path="/patient" element={
+          <ProtectedRoute role="patient">
+            <PatientDashboard />
+          </ProtectedRoute>
+        } />
+      </Routes>
+      <Footer/>
+    </Router>
   );
 }
+
+export default App;

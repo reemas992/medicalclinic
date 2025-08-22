@@ -1,0 +1,27 @@
+.login-container {
+  background-color: #f8f9fa; /* خلفية فاتحة */
+}
+
+.login-form {
+  width: 350px;
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.login-form:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+}
+
+.login-btn {
+  transition: background-color 0.3s, transform 0.2s;
+}
+
+.login-btn:hover {
+  background-color: #0056b3;
+  transform: scale(1.03);
+}
+
+.register-link:hover {
+  text-decoration: underline;
+  cursor: pointer;
+}

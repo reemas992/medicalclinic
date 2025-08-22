@@ -1,173 +1,239 @@
-// controllers/appointmentController.js
 const { Appointment, Doctor, DoctorSchedule, Holiday, User } = require('../models');
+const { Op } = require('sequelize');
 const moment = require('moment');
 
-// تحويل HH:mm إلى دقائق
-const toMinutes = (hhmm) => {
-  const [h, m] = hhmm.split(':').map(Number);
-  return h * 60 + m;
-};
-// تحويل دقائق إلى HH:mm
-const fromMinutes = (mins) => {
-  const h = String(Math.floor(mins / 60)).padStart(2, '0');
-  const m = String(mins % 60).padStart(2, '0');
-  return `${h}:${m}`;
-};
-
+// Create new appointment
 exports.bookAppointment = async (req, res) => {
   try {
-    const { doctorId, date, startTime, durationMinutes = 30 } = req.body;
-
-    if (!doctorId || !date || !startTime) {
-      return res.status(400).json({ error: 'doctorId, date, startTime are required' });
+    const { doctorId, date, notes } = req.body;
+    
+    if (!doctorId || !date) {
+      return res.status(400).json({ error: 'Doctor ID and date are required' });
     }
 
-    // 0) تحقّق أن المريض موجود في التوكن
-    if (!req.user?.id) {
-      return res.status(401).json({ error: 'Unauthorized' });
-    }
+    const patientId = req.user.id;
+    const appointmentDate = new Date(date);
+    const dayOfWeek = appointmentDate.getDay(); // 0 = Sunday, 1 = Monday, ...
+    const dateOnly = moment(appointmentDate).format('YYYY-MM-DD');
 
-    // 1) تحقق إذا كان اليوم عطلة
+    // 1. Check if it's a holiday
     const holiday = await Holiday.findOne({
-      where: { date: moment(date).format('YYYY-MM-DD') },
+      where: { date: dateOnly }
     });
+
     if (holiday) {
-      return res.status(400).json({
-        error: `Clinic is closed on ${holiday.date} (${holiday.reason || 'Holiday'})`,
+      return res.status(400).json({ 
+        error: `Clinic is closed on ${holiday.date} due to: ${holiday.reason || 'Holiday'}` 
       });
     }
 
-    // 2) تحقق من جدول الطبيب لليوم
-    const dayOfWeek = moment(date).day(); // 0 الأحد ... 6 السبت (نفس getDay)
+    // 2. Check doctor availability for this day
     const schedule = await DoctorSchedule.findOne({
-      where: { doctorId, dayOfWeek },
+      where: { 
+        doctorId, 
+        dayOfWeek 
+      }
     });
+
     if (!schedule) {
       return res.status(400).json({ error: 'Doctor is not available on this day' });
     }
 
-    // 3) تأكد أن الوقت داخل نافذة العمل
-    const reqStartMin = toMinutes(startTime);
-    const reqEndMin = reqStartMin + Number(durationMinutes);
-    const schStartMin = toMinutes(schedule.startTime);
-    const schEndMin = toMinutes(schedule.endTime);
-
-    if (reqStartMin < schStartMin || reqEndMin > schEndMin) {
-      return res.status(400).json({ error: 'Appointment time is outside doctor working hours' });
+    // 3. Check if appointment time is within doctor's working hours
+    const appointmentTime = moment(appointmentDate);
+    const startTime = moment(schedule.startTime, 'HH:mm:ss');
+    const endTime = moment(schedule.endTime, 'HH:mm:ss');
+    
+    const appointmentTimeOnly = moment(appointmentTime.format('HH:mm:ss'), 'HH:mm:ss');
+    
+    if (appointmentTimeOnly.isBefore(startTime) || appointmentTimeOnly.isAfter(endTime)) {
+      return res.status(400).json({ 
+        error: `Appointment time is outside working hours. Working hours: ${schedule.startTime} - ${schedule.endTime}` 
+      });
     }
+// تحقق من فترات الاستراحة
+const isDuringBreak = schedule.breaks.some(b => {
+  const breakStart = moment(b.start, 'HH:mm:ss');
+  const breakEnd = moment(b.end, 'HH:mm:ss');
+  return appointmentTimeOnly.isBetween(breakStart, breakEnd, null, '[)');
+});
 
-    // 4) منع التعارض: لا يوجد موعد آخر يتداخل مع الفترة المطلوبة
-    const requestedEndTime = fromMinutes(reqEndMin);
-    const overlaps = await Appointment.findOne({
+if (isDuringBreak) {
+  return res.status(400).json({ 
+    error: `Appointment time falls within a break period. Breaks: ${schedule.breaks.map(b => `${b.start}-${b.end}`).join(', ')}` 
+  });
+}
+
+    // 4. Check for conflicting appointments
+    const existingAppointment = await Appointment.findOne({
       where: {
         doctorId,
-        date,
-        status: ['scheduled', 'completed'], // استثنِ الملغاة
+        date: {
+          [Op.between]: [
+            moment(appointmentDate).subtract(29, 'minutes').toDate(),
+            moment(appointmentDate).add(29, 'minutes').toDate()
+          ]
+        },
+        status: {
+          [Op.notIn]: ['cancelled', 'no_show']
+        }
       }
     });
 
-    if (overlaps) {
-      // بدلاً من طلب واحد، نجلب جميع مواعيد اليوم ونفحص التداخل بدقة:
-      const sameDay = await Appointment.findAll({
-        where: { doctorId, date, status: ['scheduled', 'completed'] },
-        attributes: ['startTime', 'endTime']
-      });
-
-      const conflict = sameDay.some(a => {
-        const exStart = toMinutes(a.startTime);
-        const exEnd = toMinutes(a.endTime);
-        return (reqStartMin < exEnd) && (reqEndMin > exStart); // تداخل
-      });
-
-      if (conflict) {
-        return res.status(409).json({ error: 'Time slot overlaps with another appointment' });
-      }
+    if (existingAppointment) {
+      return res.status(400).json({ error: 'There is another appointment at this time' });
     }
 
-    // 5) إنشاء الموعد
+    // 5. Create the appointment
     const appointment = await Appointment.create({
       doctorId,
-      patientId: req.user.id,
-      date: moment(date).format('YYYY-MM-DD'),
-      startTime,
-      endTime: requestedEndTime,
-      status: 'scheduled',
+      patientId,
+      date: appointmentDate,
+      notes: notes || null,
+      status: 'scheduled'
     });
 
-    return res.status(201).json(appointment);
+    // 6. Get appointment details with related information
+    const appointmentWithDetails = await Appointment.findByPk(appointment.id, {
+      include: [
+        {
+          model: Doctor,
+          as: 'doctor',
+          include: [{ 
+            model: User, 
+            as: 'user',
+            attributes: ['name', 'email'] 
+          }]
+        },
+        {
+          model: User,
+          as: 'patient',
+          attributes: ['name', 'email']
+        }
+      ]
+    });
+
+    res.status(201).json({
+      message: 'Appointment booked successfully',
+      appointment: appointmentWithDetails
+    });
   } catch (err) {
-    console.error(err);
-    return res.status(500).json({ error: 'Server error' });
+    console.error('Error booking appointment:', err);
+    res.status(500).json({ error: 'Error booking appointment' });
   }
 };
 
+// Get all appointments (admin only)
 exports.getAllAppointments = async (req, res) => {
   try {
-    const { doctorId, status } = req.query;
-    const where = {};
-    if (doctorId) where.doctorId = doctorId;
-    if (status) where.status = status;
-
     const appointments = await Appointment.findAll({
-      where,
       include: [
-        { model: User, as: 'patient', attributes: ['id', 'name', 'email'] },
-        { model: Doctor, attributes: ['id', 'specialty', 'experienceYears'] }
+        {
+          model: User,
+          as: 'patient',
+          attributes: ['id', 'name', 'email']
+        },
+        {
+          model: Doctor,
+          as: 'doctor',
+          include: [{ 
+            model: User, 
+            as: 'user',
+            attributes: ['name'] 
+          }]
+        }
       ],
-      order: [['date', 'ASC'], ['startTime', 'ASC']]
+      order: [['date', 'DESC']]
     });
-    return res.json(appointments);
+    res.json(appointments);
   } catch (err) {
-    return res.status(500).json({ error: err.message });
+    res.status(500).json({ error: err.message });
   }
 };
 
+// Get current user's appointments
 exports.getMyAppointments = async (req, res) => {
   try {
+    let whereClause = {};
+    
+    // For patients, get their appointments
+    if (req.user.role === 'patient') {
+      whereClause = { patientId: req.user.id };
+    } 
+    // For doctors, get appointments assigned to them
+    else if (req.user.role === 'doctor') {
+      // First get the doctor record for this user
+      const doctor = await Doctor.findOne({ where: { userId: req.user.id } });
+      if (!doctor) {
+        return res.status(404).json({ error: 'Doctor profile not found' });
+      }
+      whereClause = { doctorId: doctor.id };
+    }
+    
     const appointments = await Appointment.findAll({
-      where: { patientId: req.user.id },
+      where: whereClause,
       include: [
-        { model: Doctor, attributes: ['id', 'specialty', 'experienceYears'] }
+        {
+          model: Doctor,
+          as: 'doctor',
+          include: [{ 
+            model: User, 
+            as: 'user',
+            attributes: ['name', 'email'] 
+          }]
+        },
+        {
+          model: User,
+          as: 'patient',
+          attributes: ['name', 'email']
+        }
       ],
-      order: [['date', 'ASC'], ['startTime', 'ASC']]
+      order: [['date', 'DESC']]
     });
-    return res.json(appointments);
+    res.json(appointments);
   } catch (err) {
-    return res.status(500).json({ error: err.message });
+    res.status(500).json({ error: err.message });
   }
 };
 
+// Cancel appointment
 exports.cancelAppointment = async (req, res) => {
   try {
     const appt = await Appointment.findByPk(req.params.id);
     if (!appt) return res.status(404).json({ error: 'Appointment not found' });
 
+    // Check user authorization
     if (req.user.role !== 'admin' && req.user.id !== appt.patientId) {
       return res.status(403).json({ error: 'Unauthorized' });
     }
 
     appt.status = 'cancelled';
     await appt.save();
-    return res.json({ message: 'Appointment cancelled successfully' });
+    
+    res.json({ message: 'Appointment cancelled successfully' });
   } catch (err) {
-    return res.status(500).json({ error: err.message });
+    res.status(500).json({ error: err.message });
   }
 };
 
+// Update appointment status (admin only)
 exports.updateAppointmentStatus = async (req, res) => {
   try {
     const appt = await Appointment.findByPk(req.params.id);
     if (!appt) return res.status(404).json({ error: 'Appointment not found' });
 
     const { status } = req.body;
-    if (!['scheduled', 'cancelled', 'completed'].includes(status)) {
-      return res.status(400).json({ error: 'Invalid status' });
+    const validStatuses = ["scheduled", "completed", "cancelled", "no_show"];
+    if (!validStatuses.includes(status)) {
+      return res.status(400).json({ error: "Invalid status value" });
     }
 
     appt.status = status;
     await appt.save();
-    return res.json(appt);
+
+    res.json({ message: "Appointment status updated successfully", appointment: appt });
   } catch (err) {
-    return res.status(500).json({ error: err.message });
+    console.error("Error updating appointment status:", err);
+    res.status(500).json({ error: "Failed to update appointment status" });
   }
 };

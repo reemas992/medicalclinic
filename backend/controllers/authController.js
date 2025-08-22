@@ -1,71 +1,107 @@
-
 const jwt = require('jsonwebtoken');
 const { User } = require('../models');
-require('dotenv').config();
 
-const signToken = (payload) =>
-  jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1d' });
+// Generate JWT token
+const generateToken = (id, role) => {
+  return jwt.sign({ id, role }, process.env.JWT_SECRET, {
+    expiresIn: '7d'
+  });
+};
 
-
-const register = async (req, res) => {
+// Register user
+exports.register = async (req, res) => {
   try {
-    const { name, email, password, role = 'patient' } = req.body;
+    const { name, email, password, role, phone, address } = req.body;
+    
+    // Check if user exists
+    const userExists = await User.findOne({ where: { email } });
+    if (userExists) {
+      return res.status(400).json({ error: 'User already exists' });
+    }
 
-    if (!name || !email || !password)
-      return res.status(400).json({ error: 'name, email, password are required' });
+    // Create user
+    const user = await User.create({
+      name,
+      email,
+      password,
+      role,
+      phone,
+      address
+    });
 
-    const exists = await User.findOne({ where: { email } });
-    if (exists) return res.status(400).json({ error: 'User already exists' });
+    // Remove password from response
+    const userResponse = { ...user.toJSON() };
+    delete userResponse.password;
 
-    if (!['admin', 'doctor', 'patient'].includes(role))
-      return res.status(400).json({ error: 'Invalid role' });
-
-    const user = await User.create({ name, email, password, role });
-    const token = signToken({ id: user.id, role: user.role });
-
-    return res.status(201).json({ token, user });
-  } catch (err) {
-    return res.status(500).json({ error: err.message });
+    res.status(201).json({
+      user: userResponse,
+      token: generateToken(user.id, user.role)
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
 };
 
-
-const login = async (req, res) => {
+// Login user
+exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    if (!email || !password)
-      return res.status(400).json({ error: 'email and password are required' });
-
+    // Check for user
     const user = await User.findOne({ where: { email } });
-    if (!user) return res.status(400).json({ error: 'Invalid credentials' });
+    if (!user) {
+      return res.status(401).json({ error: 'Invalid credentials' });
+    }
 
-    const isMatch = await user.comparePassword(password);
-    if (!isMatch) return res.status(400).json({ error: 'Invalid credentials' });
+    // Check password
+    const isPasswordValid = await user.validPassword(password);
+    if (!isPasswordValid) {
+      return res.status(401).json({ error: 'Invalid credentials' });
+    }
 
-    const token = signToken({ id: user.id, role: user.role });
-    return res.json({ token, user });
-  } catch (err) {
-    return res.status(500).json({ error: err.message });
+    // Remove password from response
+    const userResponse = { ...user.toJSON() };
+    delete userResponse.password;
+
+    res.json({
+      user: userResponse,
+      token: generateToken(user.id, user.role)
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
 };
 
-
-const me = async (req, res) => {
+// Get current user
+exports.getMe = async (req, res) => {
   try {
     const user = await User.findByPk(req.user.id, {
       attributes: { exclude: ['password'] }
     });
-    if (!user) return res.status(404).json({ error: 'User not found' });
-    return res.json(user);
-  } catch (err) {
-    return res.status(500).json({ error: err.message });
+    res.json(user);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
 };
 
-
-module.exports = {
-  register,
-  login,
-  me
+// Update user profile
+exports.updateProfile = async (req, res) => {
+  try {
+    const { name, phone, address } = req.body;
+    const user = await User.findByPk(req.user.id);
+    
+    if (name) user.name = name;
+    if (phone) user.phone = phone;
+    if (address) user.address = address;
+    
+    await user.save();
+    
+    // Remove password from response
+    const userResponse = { ...user.toJSON() };
+    delete userResponse.password;
+    
+    res.json(userResponse);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 };

@@ -1,26 +1,45 @@
-// controllers/doctorController.js
-const { Doctor, User } = require('../models');
+const { Doctor } = require('../models'); // تأكد أن نموذج Doctor موجود
 
-exports.getDoctors = async (req, res) => {
+// جلب كل الأطباء
+const getDoctors = async (req, res) => {
   try {
-    const doctors = await Doctor.findAll({
-      include: [{ model: User, attributes: ['name', 'email'] }]
-    });
-    return res.json(doctors);
+    const doctors = await Doctor.findAll();
+    res.json(doctors);
   } catch (err) {
-    return res.status(500).json({ error: err.message });
+    console.error(err);
+    res.status(500).json({ error: 'Failed to fetch doctors' });
   }
 };
 
-exports.addDoctor = async (req, res) => {
+// جلب طبيب واحد حسب الـ ID
+const getDoctor = async (req, res) => {
   try {
-    const { userId, specialty, bio, experienceYears, phone } = req.body;
-    if (!userId || !specialty) {
-      return res.status(400).json({ error: 'userId and specialty are required' });
+    const doctor = await Doctor.findByPk(req.params.id);
+    if (!doctor) {
+      return res.status(404).json({ error: 'Doctor not found' });
     }
-    const doctor = await Doctor.create({ userId, specialty, bio, experienceYears, phone });
-    return res.json(doctor);
+    res.json(doctor);
   } catch (err) {
-    return res.status(500).json({ error: err.message });
+    console.error(err);
+    res.status(500).json({ error: 'Failed to fetch doctor' });
   }
 };
+
+// إضافة طبيب جديد (يتطلب دور admin)
+const addDoctor = async (req, res) => {
+  try {
+    const { name, specialty, email,experience_years } = req.body;
+
+    if (!name || !specialty || !email || !experience_years) {
+      return res.status(400).json({ error: 'All fields are required' });
+    }
+
+    const newDoctor = await Doctor.create({ name, specialty, email,experience_years });
+    res.status(201).json(newDoctor);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to add doctor' });
+  }
+};
+
+module.exports = { getDoctors, getDoctor, addDoctor };

@@ -1,30 +1,29 @@
 const express = require('express');
-const {
-  bookAppointment,
-  cancelAppointment,
-  getMyAppointments,
-  getAllAppointments,
-  updateAppointmentStatus
+const { 
+  bookAppointment, 
+  cancelAppointment, 
+  getMyAppointments, 
+  getAllAppointments, 
+  updateAppointmentStatus 
 } = require('../controllers/appointmentController');
-
-const auth = require('../middelware/auth');
+const auth = require('../middleware/auth');
+const requireRole = require('../middleware/role');
 
 const router = express.Router();
 
-// 🧾 حجز موعد (مريض)
+// Book appointment (patient)
 router.post('/', auth, bookAppointment);
 
-// ❌ إلغاء موعد (مريض أو أدمن)
+// Cancel appointment (patient or admin)
 router.put('/:id/cancel', auth, cancelAppointment);
 
-// 👤 عرض مواعيدي (مريض فقط)
+// Get my appointments (patient or doctor)
 router.get('/my', auth, getMyAppointments);
 
-// 🛠️ عرض كل المواعيد (أدمن فقط) - تحتاج حماية بصلاحية role
-router.get('/', auth, getAllAppointments);
+// Get all appointments (admin only)
+router.get('/', auth, requireRole('admin'), getAllAppointments);
 
-// 🔄 تحديث حالة موعد (أدمن فقط)
-router.put('/:id/status', auth, updateAppointmentStatus);
+// Update appointment status (admin only)
+router.put('/:id/status', auth, requireRole('admin'), updateAppointmentStatus);
 
 module.exports = router;
-

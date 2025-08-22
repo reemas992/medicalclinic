@@ -1,8 +1,7 @@
-// routes/alertRoutes.js
 const express = require('express');
-const { checkTodayHoliday } = require('../controllers/alertController.js');
+const { checkTodayHoliday } = require('../controllers/scheduleController');
 const router = express.Router();
 
-router.get('/today', checkTodayHoliday); // مثال: GET /api/alerts/today
+router.get('/today', checkTodayHoliday);
 
 module.exports = router;
