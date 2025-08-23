@@ -1,9 +1,17 @@
-const { Doctor } = require('../models'); // تأكد أن نموذج Doctor موجود
+const { Doctor, User } = require('../models');
 
-// جلب كل الأطباء
+// -------------------- Get all doctors -------------------- //
 const getDoctors = async (req, res) => {
   try {
-    const doctors = await Doctor.findAll();
+    const doctors = await Doctor.findAll({
+      include: [
+        {
+          model: User,
+          as: 'user',  // يجب مطابقته مع الـ alias في association
+          attributes: ['name', 'email'] // الحقول المطلوبة
+        }
+      ]
+    });
     res.json(doctors);
   } catch (err) {
     console.error(err);
@@ -11,13 +19,19 @@ const getDoctors = async (req, res) => {
   }
 };
 
-// جلب طبيب واحد حسب الـ ID
+// -------------------- Get one doctor by ID -------------------- //
 const getDoctor = async (req, res) => {
   try {
-    const doctor = await Doctor.findByPk(req.params.id);
-    if (!doctor) {
-      return res.status(404).json({ error: 'Doctor not found' });
-    }
+    const doctor = await Doctor.findByPk(req.params.id, {
+      include: [
+        {
+          model: User,
+          as: 'user',
+          attributes: ['name', 'email']
+        }
+      ]
+    });
+    if (!doctor) return res.status(404).json({ error: 'Doctor not found' });
     res.json(doctor);
   } catch (err) {
     console.error(err);
@@ -25,16 +39,16 @@ const getDoctor = async (req, res) => {
   }
 };
 
-// إضافة طبيب جديد (يتطلب دور admin)
+// -------------------- Add new doctor (admin only) -------------------- //
 const addDoctor = async (req, res) => {
   try {
-    const { name, specialty, email,experience_years } = req.body;
+    const { userId, specialty, bio, experience_years, phone } = req.body;
 
-    if (!name || !specialty || !email || !experience_years) {
-      return res.status(400).json({ error: 'All fields are required' });
+    if (!userId || !specialty || experience_years == null) {
+      return res.status(400).json({ error: 'userId, specialty, and experience_years are required' });
     }
 
-    const newDoctor = await Doctor.create({ name, specialty, email,experience_years });
+    const newDoctor = await Doctor.create({ userId, specialty, bio, experience_years, phone });
     res.status(201).json(newDoctor);
   } catch (err) {
     console.error(err);

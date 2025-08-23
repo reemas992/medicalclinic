@@ -37,6 +37,11 @@ export default function AppNavbar() {
           <Button as={Link} to="/contact" variant="link" className="nav-btn">
             Contact
           </Button>
+
+          {/* New Services Button */}
+          <Button as={Link} to="/services" variant="link" className="nav-btn">
+            Services
+          </Button>
         </div>
 
         {/* User Section */}
@@ -52,8 +57,6 @@ export default function AppNavbar() {
             </>
           ) : (
             <>
-             
-
               <Button
                 as={Link}
                 to={
@@ -77,7 +80,8 @@ export default function AppNavbar() {
               >
                 Logout
               </Button>
-               <span className="fw-bold text-primary">
+
+              <span className="fw-bold text-primary">
                 Welcome {user.username} ({user.role})
               </span>
             </>

@@ -5,6 +5,7 @@ import api from "./axios"; // تأكد من أن ملف axios.js موجود في
 export const getDoctors = async () => {
   try {
     const res = await api.get("/doctors");
+    console.log(res.data)
     return res.data;
   } catch (err) {
     console.error("Error fetching doctors:", err);
@@ -33,3 +34,25 @@ export const addDoctor = async (doctorData) => {
     throw err;
   }
 };
+
+// 📌 تحديث طبيب حسب الـ ID (admin فقط)
+export const updateDoctor = async (id, doctorData) => {
+  try {
+    const res = await api.put(`/doctors/${id}`, doctorData);
+    return res.data;
+  } catch (err) {
+    console.error(`Error updating doctor ${id}:`, err);
+    throw err;
+  }
+};
+export const deleteDoctor = async (id) => {
+  try {
+    const res = await api.delete(`/doctors/${id}`);
+    return res.data;
+  } catch (err) {
+    console.error(`Error deleting doctor ${id}:`, err);
+    throw err;
+  }
+};
+
+

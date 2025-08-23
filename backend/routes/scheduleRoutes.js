@@ -20,4 +20,22 @@ router.delete('/doctor-schedule/:id', auth, deleteSchedule);
 router.post('/holiday', auth, requireRole('admin'), createHoliday);
 router.get('/holidays', auth, getHolidays);
 
+// Get all schedules (admin only)
+router.get('/doctor-schedule', auth, requireRole('admin'), async (req, res) => {
+  try {
+    const schedules = await DoctorSchedule.findAll({
+      include: {
+        model: Doctor,
+        as: 'doctor',
+        include: { model: User, as: 'user', attributes: ['id', 'name', 'email'] }
+      }
+    });
+    res.json(schedules);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Error fetching schedules" });
+  }
+});
+
+
 module.exports = router;

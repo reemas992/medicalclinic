@@ -12,6 +12,7 @@ body {
   background-color: #f8f9fa;
   direction: ltr; /* Change from rtl to ltr */
   text-align: left; /* Change from right to left */
+  width: 100%;
 }
 
 /* Navbar.css (English/LTR Version) */

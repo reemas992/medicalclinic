@@ -13,6 +13,8 @@ import PatientDashboard from './pages/patient/PatientDashboard';
 import ProtectedRoute from './routes/protectedRoute';
 import AppNavbar from './components/AppNavbar';
 import Footer from './components/Footer';
+import Service from "./components/Services";
+
 
 function App() {
   return (
@@ -25,6 +27,7 @@ function App() {
         <Route path="/doctors" element={<Doctors />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/jobs" element={<Jobs />} />
+        <Route path="/services" element={<Service />} />
         <Route path="/evaluations" element={
           <ProtectedRoute>
             <Evaluations />

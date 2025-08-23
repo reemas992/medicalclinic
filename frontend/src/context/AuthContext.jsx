@@ -14,9 +14,8 @@ export const AuthProvider = ({ children }) => {
       try {
         const token = localStorage.getItem('token'); // جلب التوكن من التخزين المحلي
         if (token) {
-          const response = await axios.get('/auth/me', {
-            headers: { Authorization: `Bearer ${token}` }
-          });
+         const response = await axios.get('/auth/me');
+         
           setUser(response.data);
         }
       } catch (error) {
