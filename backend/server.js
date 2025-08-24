@@ -36,7 +36,7 @@ sequelize.sync({ force: false })
   .then(async () =>  {
     console.log("calling Seed.js...");
 
-   //await seed();
+  //await seed();
     console.log("Database Connected ✔️")
   })
   .catch(err => console.error("❌ DB Error:", err));

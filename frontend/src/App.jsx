@@ -14,10 +14,12 @@ import ProtectedRoute from './routes/protectedRoute';
 import AppNavbar from './components/AppNavbar';
 import Footer from './components/Footer';
 import Service from "./components/Services";
+import { AuthProvider } from "./context/AuthContext";
 
 
 function App() {
   return (
+     <AuthProvider>
     <Router>
       <AppNavbar />
       <Routes>
@@ -52,6 +54,7 @@ function App() {
       </Routes>
       <Footer/>
     </Router>
+    </AuthProvider>
   );
 }
 

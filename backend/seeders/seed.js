@@ -1,7 +1,6 @@
 // seeders/seed.js
 const { sequelize, User, Doctor, Appointment, DoctorSchedule, Holiday, Job } = require('../models');
 const { faker } = require('@faker-js/faker');
-const bcrypt = require('bcrypt');
 
 async function seed() {
   try {
@@ -14,11 +13,10 @@ async function seed() {
     // 1️⃣ Admins
     const admins = [];
     for (let i = 1; i <= 3; i++) {
-      const hashedPassword = await bcrypt.hash('admin123', 10);
       const admin = await User.create({
         name: `Admin ${i}`,
         email: `admin${i}@clinic.com`,
-        password: hashedPassword,
+        password: 'admin123',   // بدون تشفير
         role: 'admin'
       });
       admins.push(admin);
@@ -29,11 +27,10 @@ async function seed() {
     const doctors = [];
 
     for (let i = 0; i < 5; i++) {
-      const hashedPassword = await bcrypt.hash('doctor123', 10);
       const user = await User.create({
         name: `Dr. ${faker.person.firstName()}`,
         email: `doctor${i + 1}@clinic.com`,
-        password: hashedPassword,
+        password: 'doctor123',   // بدون تشفير
         role: 'doctor'
       });
 
@@ -51,11 +48,10 @@ async function seed() {
     // 3️⃣ Patients
     const patients = [];
     for (let i = 1; i <= 50; i++) {
-      const hashedPassword = await bcrypt.hash('patient123', 10);
       const patient = await User.create({
         name: faker.person.fullName(),
         email: `patient${i}@clinic.com`,
-        password: hashedPassword,
+        password: 'patient123',   // بدون تشفير
         role: 'patient'
       });
       patients.push(patient);

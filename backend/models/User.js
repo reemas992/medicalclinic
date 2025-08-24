@@ -38,19 +38,8 @@ const User = sequelize.define("User", {
     allowNull: true
   }
 }, {
-  timestamps: true,
-  hooks: {
-    beforeSave: async (user) => {
-      if (user.changed('password')) {
-        user.password = await bcrypt.hash(user.password, 10);
-      }
-    }
-  }
+  timestamps: true
 });
 
-// Method to check password
-User.prototype.validPassword = function(password) {
-  return bcrypt.compare(password, this.password);
-};
 
 module.exports = User;

@@ -19,7 +19,7 @@ exports.register = async (req, res) => {
       return res.status(400).json({ error: 'User already exists' });
     }
 
-    // Create user
+    // Create user (password plain text)
     const user = await User.create({
       name,
       email,
@@ -53,9 +53,8 @@ exports.login = async (req, res) => {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
-    // Check password
-    const isPasswordValid = await user.validPassword(password);
-    if (!isPasswordValid) {
+    // Compare plain text password
+    if (user.password !== password) {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
@@ -96,7 +95,6 @@ exports.updateProfile = async (req, res) => {
     
     await user.save();
     
-    // Remove password from response
     const userResponse = { ...user.toJSON() };
     delete userResponse.password;
     
