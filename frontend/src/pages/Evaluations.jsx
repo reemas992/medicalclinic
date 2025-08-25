@@ -8,6 +8,9 @@ const EvaluationPage = () => {
   const [evaluations, setEvaluations] = useState([]);
   const [editingId, setEditingId] = useState(null);
 
+  // 🟢 Get current user from localStorage
+  const user = JSON.parse(localStorage.getItem("user"));
+
   const fetchEvaluations = async () => {
     try {
       const res = await getAllEvaluations();
@@ -57,6 +60,7 @@ const EvaluationPage = () => {
     <Container className="py-4">
       <h2 className="mb-4">Clinic Evaluations</h2>
 
+      {/* Form to add or edit evaluation */}
       <Form onSubmit={handleSubmit} className="mb-4">
         <Form.Group className="mb-3">
           <Form.Label>Rating</Form.Label>
@@ -104,6 +108,7 @@ const EvaluationPage = () => {
         )}
       </Form>
 
+      {/* Evaluations list */}
       {evaluations.length === 0 ? (
         <p>No evaluations yet.</p>
       ) : (
@@ -113,24 +118,30 @@ const EvaluationPage = () => {
               <Card.Title>{ev.rating} ⭐</Card.Title>
               <Card.Text>{ev.comment}</Card.Text>
               <small className="text-muted">
-                by: {ev.user?.name || "Unknown"}
+                by: {ev.evaluator?.name || "Unknown"}
               </small>
-              <div className="mt-2">
-                <Button
-                  size="sm"
-                  variant="outline-primary"
-                  onClick={() => handleEdit(ev)}
-                >
-                  Edit
-                </Button>{" "}
-                <Button
-                  size="sm"
-                  variant="outline-danger"
-                  onClick={() => handleDelete(ev.id)}
-                >
-                  Delete
-                </Button>
-              </div>
+
+              {/* ✅ Show buttons only if: 
+                  - Admin can always see
+                  - Patient only on their evaluation */}
+              {(user?.role === "admin" || user?.id === ev.userId) && (
+                <div className="mt-2">
+                  <Button
+                    size="sm"
+                    variant="outline-primary"
+                    onClick={() => handleEdit(ev)}
+                  >
+                    Edit
+                  </Button>{" "}
+                  <Button
+                    size="sm"
+                    variant="outline-danger"
+                    onClick={() => handleDelete(ev.id)}
+                  >
+                    Delete
+                  </Button>
+                </div>
+              )}
             </Card.Body>
           </Card>
         ))
