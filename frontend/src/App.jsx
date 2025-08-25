@@ -17,6 +17,7 @@ import Service from "./components/Services";
 import { AuthProvider } from "./context/AuthContext";
 
 
+
 function App() {
   return (
      <AuthProvider>
@@ -51,6 +52,7 @@ function App() {
             <PatientDashboard />
           </ProtectedRoute>
         } />
+        
       </Routes>
       <Footer/>
     </Router>
