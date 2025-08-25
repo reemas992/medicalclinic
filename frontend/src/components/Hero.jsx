@@ -78,7 +78,7 @@ const HeroSection = () => {
       {/* Modal for Anamnesis Form */}
       <Modal show={showForm} onHide={() => setShowForm(false)} size="lg">
         <Modal.Header closeButton>
-          <Modal.Title>Patient Anamnesis Form</Modal.Title>
+          <Modal.Title>📝Patient Anamnesis Form</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <form>

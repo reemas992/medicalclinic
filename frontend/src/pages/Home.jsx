@@ -3,6 +3,8 @@ import Hero from "../components/Hero";
 import DoctorCard from "../components/DoctorCard";
 import { Container, Row, Col } from "react-bootstrap";
 import { getDoctors } from "../api/doctors";
+import HolidayAlert from "../components/HolidayAlert";
+
 
 export default function Home() {
   const [doctors, setDoctors] = useState([]);
@@ -21,6 +23,7 @@ export default function Home() {
 
   return (
     <>
+      <HolidayAlert />
       <Hero />
       <Container className="py-5">
         <h2 className="mb-4"> Our Doctors</h2>

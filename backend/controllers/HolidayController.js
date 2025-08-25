@@ -8,7 +8,7 @@ exports.getHolidays = async (req, res) => {
         res.json(holidays);
     } catch (err) {
         console.error(err);
-        res.status(500).json({ message: 'حدث خطأ أثناء جلب العطلات' });
+        res.status(500).json({ message: 'Failed to retrieve holidays' });
     }
 };
 
@@ -17,19 +17,19 @@ exports.createHoliday = async (req, res) => {
     const { date, reason } = req.body;
 
     if (!date) {
-        return res.status(400).json({ message: 'التاريخ مطلوب' });
+        return res.status(400).json({ message: 'Date is required' });
     }
 
     try {
         const existing = await Holiday.findOne({ where: { date } });
         if (existing) {
-            return res.status(400).json({ message: 'هناك عطلة مسجلة في هذا التاريخ بالفعل' });
+            return res.status(400).json({ message: 'A holiday is already registered on this date' });
         }
 
         const newHoliday = await Holiday.create({ date, reason });
         res.status(201).json(newHoliday);
     } catch (err) {
         console.error(err);
-        res.status(500).json({ message: 'حدث خطأ أثناء إنشاء العطلة' });
+        res.status(500).json({ message: 'Failed to create holiday' });
     }
 };
