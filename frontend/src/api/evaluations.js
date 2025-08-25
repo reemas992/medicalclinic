@@ -1,35 +1,26 @@
-// frontend/src/api/evaluations.js
-import api from "./axios";
+import axios from "./axios";
 
-// 📌 Create a new evaluation
-export const createEvaluation = async (data) => {
-  try {
-    const res = await api.post("/evaluations", data);
-    return res.data;
-  } catch (err) {
-    console.error("Failed to create evaluation:", err);
-    throw err;
-  }
+// 🟢 إضافة تقييم جديد
+export const addEvaluation = async (data) => {
+  return await axios.post("/evaluations", data);
 };
 
-// 📌 Get evaluations for the current user (patient or doctor)
-export const getMyEvaluations = async () => {
-  try {
-    const res = await api.get("/evaluations/my");
-    return res.data;
-  } catch (err) {
-    console.error("Failed to fetch my evaluations:", err);
-    throw err;
-  }
-};
-
-// 📌 Get all evaluations (admin only)
+// 🟢 جلب كل التقييمات
 export const getAllEvaluations = async () => {
-  try {
-    const res = await api.get("/evaluations");
-    return res.data;
-  } catch (err) {
-    console.error("Failed to fetch all evaluations:", err);
-    throw err;
-  }
+  return await axios.get("/evaluations");
+};
+
+// 🟢 جلب تقييماتي
+export const getMyEvaluations = async () => {
+  return await axios.get("/evaluations/me");
+};
+
+// 🟢 تعديل تقييم
+export const updateEvaluation = async (id, data) => {
+  return await axios.put(`/evaluations/${id}`, data);
+};
+
+// 🟢 حذف تقييم
+export const deleteEvaluation = async (id) => {
+  return await axios.delete(`/evaluations/${id}`);
 };

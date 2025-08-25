@@ -37,7 +37,9 @@ export default function AppNavbar() {
           <Button as={Link} to="/contact" variant="link" className="nav-btn">
             Contact
           </Button>
-
+          <Button as={Link} to="/evaluations" variant="link" className="nav-btn">
+            Evaluations
+          </Button>
           {/* New Services Button */}
           <Button as={Link} to="/services" variant="link" className="nav-btn">
             Services

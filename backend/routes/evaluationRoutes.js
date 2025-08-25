@@ -1,15 +1,15 @@
-const express = require("express");
+const express = require('express');
 const router = express.Router();
-const evaluationController = require("../controllers/evaluationController");
-const auth = require("../middleware/auth");
+const evaluationController = require('../controllers/evaluationController');
+const auth = require('../middleware/auth');
 
-// المريض يضيف تقييم
-router.post("/", auth, evaluationController.createEvaluation);
+// الحصول على جميع التقييمات
+router.get('/', auth, evaluationController.getAllEvaluations);
 
-// جلب التقييمات الخاصة بدكتور
-router.get("/doctor/:doctorId", evaluationController.getDoctorEvaluations);
+// إنشاء تقييم جديد
+router.post('/', auth, evaluationController.createEvaluation);
 
-// المريض يشوف تقييماته الخاصة
-router.get("/me", auth, evaluationController.getMyEvaluations);
+// حذف تقييم (المستخدم العادي يمكنه حذف تقييمه، الأدمن يمكنه حذف أي تقييم)
+router.delete('/:id', auth, evaluationController.deleteEvaluation);
 
 module.exports = router;

@@ -32,11 +32,11 @@ app.get('/', (req, res) => res.send('API is running'));
 app.get('/api/doctors/ping', (req, res) => res.send('pong'));
 console.log(listEndpoints(app));
 
-sequelize.sync({ force: false })
+sequelize.sync({ force:false})
   .then(async () =>  {
     console.log("calling Seed.js...");
-
-  //await seed();
+ 
+//await seed();
     console.log("Database Connected ✔️")
   })
   .catch(err => console.error("❌ DB Error:", err));

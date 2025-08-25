@@ -1,96 +1,62 @@
-const { Evaluation, Appointment, Doctor, User } = require('../models');
+const { Evaluation, User } = require('../models');
 
-// -------------------- Create Evaluation -------------------- //
-exports.createEvaluation = async (req, res) => {
+// الحصول على جميع التقييمات
+exports.getAllEvaluations = async (req, res) => {
   try {
-    const { appointmentId, rating, comment } = req.body;
-    const patientId = req.user.id;
-
-    // Check if appointment exists and belongs to this patient
-    const appointment = await Appointment.findByPk(appointmentId);
-    if (!appointment) return res.status(404).json({ error: 'Appointment not found' });
-    if (appointment.patientId !== patientId) return res.status(403).json({ error: 'Not authorized to evaluate this appointment' });
-
-    // Check if evaluation already exists for this appointment
-    const existingEvaluation = await Evaluation.findOne({ where: { appointmentId } });
-    if (existingEvaluation) return res.status(400).json({ error: 'Evaluation already exists for this appointment' });
-
-    const evaluation = await Evaluation.create({
-      appointmentId,
-      patientId,
-      doctorId: appointment.doctorId,
-      rating,
-      comment
-    });
-
-    res.status(201).json(evaluation);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-};
-
-// -------------------- Get Evaluations for Current User -------------------- //
-exports.getMyEvaluations = async (req, res) => {
-  try {
-    let whereClause = {};
-    if (req.user.role === 'patient') {
-      whereClause = { patientId: req.user.id };
-    } else if (req.user.role === 'doctor') {
-      const doctor = await Doctor.findOne({ where: { userId: req.user.id } });
-      if (!doctor) return res.status(404).json({ error: 'Doctor profile not found' });
-      whereClause = { doctorId: doctor.id };
-    }
-
-    const evaluations = await Evaluation.findAll({
-      where: whereClause,
-      include: [
-        { model: User, as: 'patient', attributes: ['name'] },
-        { model: Doctor, as: 'doctor', include: [{ model: User, as: 'user', attributes: ['name'] }] },
-        { model: Appointment, as: 'appointment', attributes: ['date'] }
-      ],
-      order: [['createdAt', 'DESC']]
-    });
-
-    res.json(evaluations);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-};
-
-// -------------------- Get Evaluations for a Specific Doctor -------------------- //
-exports.getDoctorEvaluations = async (req, res) => {
-  try {
-    const { doctorId } = req.params;
-
-    const evaluations = await Evaluation.findAll({
-      where: { doctorId },
-      include: [
-        { model: User, as: 'patient', attributes: ['name'] },
-        { model: Appointment, as: 'appointment', attributes: ['date'] }
-      ],
-      order: [['createdAt', 'DESC']]
-    });
+  const evaluations = await Evaluation.findAll({
+  include: { 
+    model: User, 
+    as: 'evaluator',  // يجب أن يطابق alias في العلاقة
+    attributes: ['id', 'name', 'role'] 
+  },
+  order: [['createdAt', 'DESC']]
+});
 
     res.json(evaluations);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('Error fetching evaluations:', err);
+    res.status(500).json({ error: 'Internal server error' });
   }
 };
 
-// -------------------- Get All Evaluations (Admin Only) -------------------- //
-exports.getAllEvaluations = async (req, res) => {
+// إنشاء تقييم جديد
+exports.createEvaluation = async (req, res) => {
   try {
-    const evaluations = await Evaluation.findAll({
-      include: [
-        { model: User, as: 'patient', attributes: ['name'] },
-        { model: Doctor, as: 'doctor', include: [{ model: User, as: 'user', attributes: ['name'] }] },
-        { model: Appointment, as: 'appointment', attributes: ['date'] }
-      ],
-      order: [['createdAt', 'DESC']]
-    });
+    const { rating, comment } = req.body;
+    const userId = req.user.id;
 
-    res.json(evaluations);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
+    if (!rating || !comment) {
+      return res.status(400).json({ error: 'Rating and comment are required' });
+    }
+
+    const evaluation = await Evaluation.create({ userId, rating, comment });
+    res.status(201).json(evaluation);
+  } catch (err) {
+    console.error('Error creating evaluation:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+// حذف تقييم
+exports.deleteEvaluation = async (req, res) => {
+  try {
+    const evaluationId = req.params.id;
+    const user = req.user;
+
+    const evaluation = await Evaluation.findByPk(evaluationId);
+    if (!evaluation) {
+      return res.status(404).json({ error: 'Evaluation not found' });
+    }
+
+    // التحقق من الصلاحية
+    if (user.role !== 'admin' && evaluation.userId !== user.id) {
+      return res.status(403).json({ error: 'Not authorized to delete this evaluation' });
+    }
+
+    await evaluation.destroy();
+    res.json({ message: 'Evaluation deleted successfully' });
+  } catch (err) {
+    console.error('Error deleting evaluation:', err);
+    res.status(500).json({ error: 'Internal server error' });
   }
 };

@@ -1,45 +1,35 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/db');
+const User = require('./User'); // 👈 استدعاء الموديل
 
-const Evaluation = sequelize.define("Evaluation", {
+const Evaluation = sequelize.define('Evaluation', {
+  id: {
+    type: DataTypes.INTEGER,
+    primaryKey: true,
+    autoIncrement: true,
+  },
   rating: {
     type: DataTypes.INTEGER,
     allowNull: false,
     validate: {
       min: 1,
-      max: 5
-    }
+      max: 5,
+    },
   },
   comment: {
     type: DataTypes.TEXT,
-    allowNull: true
+    allowNull: true,
   },
-  appointmentId: {
-    type: DataTypes.INTEGER,
-    allowNull: false,
-    references: {
-      model: 'Appointments',
-      key: 'id'
-    }
-  },
-  patientId: {
+  userId: {   // 👈 لتحديد صاحب التقييم
     type: DataTypes.INTEGER,
     allowNull: false,
     references: {
       model: 'Users',
       key: 'id'
     }
-  },
-  doctorId: {
-    type: DataTypes.INTEGER,
-    allowNull: false,
-    references: {
-      model: 'Doctors',
-      key: 'id'
-    }
   }
 }, {
-  timestamps: true
+  timestamps: true,
 });
 
 module.exports = Evaluation;

@@ -20,14 +20,10 @@ Doctor.hasMany(Appointment, { foreignKey: 'doctorId', as: 'doctorAppointments' }
 DoctorSchedule.belongsTo(Doctor, { foreignKey: 'doctorId', as: 'doctor' });
 Doctor.hasMany(DoctorSchedule, { foreignKey: 'doctorId', as: 'schedules' });
 
-Evaluation.belongsTo(User, { foreignKey: 'patientId', as: 'patient' });
-User.hasMany(Evaluation, { foreignKey: 'patientId', as: 'patientEvaluations' });
+// علاقة: كل تقييم ينتمي لمستخدم
+Evaluation.belongsTo(User, { foreignKey: 'userId', as: 'evaluator' });
+User.hasMany(Evaluation, { foreignKey: 'userId', as: 'evaluations' });
 
-Evaluation.belongsTo(Doctor, { foreignKey: 'doctorId', as: 'doctor' });
-Doctor.hasMany(Evaluation, { foreignKey: 'doctorId', as: 'doctorEvaluations' });
-
-Evaluation.belongsTo(Appointment, { foreignKey: 'appointmentId', as: 'appointment' });
-Appointment.hasOne(Evaluation, { foreignKey: 'appointmentId', as: 'evaluation' });
 
 
 module.exports = {
