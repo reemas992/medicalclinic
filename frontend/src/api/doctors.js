@@ -1,17 +1,6 @@
 // src/api/doctor.js
-import api from "./axios"; // تأكد من أن ملف axios.js موجود في src/api
+import api from "./axios"; // 
 
-// 📌 جلب كل الأطباء
-export const getDoctors = async () => {
-  try {
-    const res = await api.get("/doctors");
-    console.log(res.data)
-    return res.data;
-  } catch (err) {
-    console.error("Error fetching doctors:", err);
-    throw err;
-  }
-};
 
 // 📌 جلب طبيب معين حسب الـ ID
 export const getDoctor = async (id) => {
@@ -24,35 +13,23 @@ export const getDoctor = async (id) => {
   }
 };
 
-// 📌 إضافة طبيب جديد (admin فقط)
+
+export const getDoctors = async () => {
+  const res = await api.get("/doctors");
+  return res.data;
+};
+
 export const addDoctor = async (doctorData) => {
-  try {
-    const res = await api.post("/doctors", doctorData);
-    return res.data;
-  } catch (err) {
-    console.error("Error adding doctor:", err);
-    throw err;
-  }
+  const res = await api.post("/doctors", doctorData);
+  return res.data;
 };
 
-// 📌 تحديث طبيب حسب الـ ID (admin فقط)
 export const updateDoctor = async (id, doctorData) => {
-  try {
-    const res = await api.put(`/doctors/${id}`, doctorData);
-    return res.data;
-  } catch (err) {
-    console.error(`Error updating doctor ${id}:`, err);
-    throw err;
-  }
+  const res = await api.put(`/doctors/${id}`, doctorData);
+  return res.data;
 };
+
 export const deleteDoctor = async (id) => {
-  try {
-    const res = await api.delete(`/doctors/${id}`);
-    return res.data;
-  } catch (err) {
-    console.error(`Error deleting doctor ${id}:`, err);
-    throw err;
-  }
+  const res = await api.delete(`/doctors/${id}`);
+  return res.data;
 };
-
-

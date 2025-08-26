@@ -11,6 +11,8 @@ const Footer = () => {
           </Col>
           <Col md={6} className="text-md-end">
             <p>Contact: info@mediclinic.com | Phone: +123 456 7890</p>
+            <p>Address: Bolmeen Str. 1 – 04013 Berlin Deutschland         </p>
+          
           </Col>
         </Row>
       </Container>

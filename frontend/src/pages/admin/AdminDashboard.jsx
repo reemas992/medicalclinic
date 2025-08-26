@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { Container, Table, Button, Tabs, Tab, Modal, Form } from "react-bootstrap";
 import { getAllAppointments, updateAppointmentStatus } from "../../api/appointments";
-import { getDoctors, updateDoctor, deleteDoctor } from "../../api/doctors";
-import { getJobs, updateJob, deleteJob } from "../../api/jobs";
-import HolidaysTab from "../../components/HolidaysTab"; // تبويب العطلات
+import { getDoctors, addDoctor, updateDoctor, deleteDoctor } from "../../api/doctors";
+import { getJobs, createJob, updateJob, deleteJob } from "../../api/jobs";
+import HolidaysTab from "../../components/HolidaysTab";
 
 export default function AdminDashboard() {
   const [appointments, setAppointments] = useState([]);
@@ -11,13 +11,30 @@ export default function AdminDashboard() {
   const [jobs, setJobs] = useState([]);
   const [key, setKey] = useState("appointments");
 
-  // Modal state
+  // Modals state
   const [showConfirm, setShowConfirm] = useState(false);
   const [confirmData, setConfirmData] = useState({ type: "", id: null });
+
   const [showDoctorModal, setShowDoctorModal] = useState(false);
   const [selectedDoctor, setSelectedDoctor] = useState(null);
+
+  const [showAddDoctorModal, setShowAddDoctorModal] = useState(false);
+  const [newDoctor, setNewDoctor] = useState({
+    name: "",
+    specialty: "",
+    experience_years: 0,
+  });
+
   const [showJobModal, setShowJobModal] = useState(false);
   const [selectedJob, setSelectedJob] = useState(null);
+  const [showAddJobModal, setShowAddJobModal] = useState(false);
+  const [newJob, setNewJob] = useState({
+    title: "",
+    department: "",
+    status: "open",
+    description: "",
+    requirements: ""
+  });
 
   useEffect(() => {
     const fetchData = async () => {
@@ -69,23 +86,56 @@ export default function AdminDashboard() {
   };
 
   // Doctor
-  const handleEditDoctor = (doc) => { setSelectedDoctor({ ...doc, name: doc.user?.name || "" }); setShowDoctorModal(true); }
+  const handleEditDoctor = (doc) => {
+    setSelectedDoctor({
+      id: doc.id,
+      specialty: doc.specialty,
+      experience_years: doc.experience_years,
+    });
+    setShowDoctorModal(true);
+  };
+
   const handleUpdateDoctor = async () => {
     try {
       const updated = await updateDoctor(selectedDoctor.id, selectedDoctor);
-      setDoctors(prev => prev.map(d => d.id === updated.id ? updated : d));
+      setDoctors(prev => prev.map(d => d.id === updated.id ? { ...d, ...updated } : d));
       setShowDoctorModal(false);
     } catch (err) { console.error(err); }
   };
 
+  const handleAddDoctor = async () => {
+  try {
+    const created = await addDoctor(newDoctor);
+    setDoctors(prev => [created, ...prev]);
+    setShowAddDoctorModal(false);
+    setNewDoctor({ userId: "", name: "", specialty: "", experience_years: 0 });
+  } catch (err) {
+    console.error(err);
+  }
+};
+
+
   // Job
-  const handleEditJob = (job) => { setSelectedJob(job); setShowJobModal(true); }
+  const handleEditJob = (job) => {
+    setSelectedJob(job);
+    setShowJobModal(true);
+  };
   const handleUpdateJob = async () => {
     try {
       const updated = await updateJob(selectedJob.id, selectedJob);
       setJobs(prev => prev.map(j => j.id === updated.id ? updated : j));
       setShowJobModal(false);
     } catch (err) { console.error(err); }
+  };
+  const handleAddJob = async () => {
+    try {
+      const created = await createJob(newJob);
+      setJobs(prev => [created, ...prev]);
+      setShowAddJobModal(false);
+      setNewJob({ title: "", department: "", status: "open", description: "", requirements: "" });
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   return (
@@ -122,14 +172,16 @@ export default function AdminDashboard() {
 
         {/* Doctors */}
         <Tab eventKey="doctors" title="Doctors">
+          <Button variant="primary" className="mb-3" onClick={() => setShowAddDoctorModal(true)}>Add Doctor</Button>
           <Table striped bordered hover>
-            <thead><tr><th>ID</th><th>Name</th><th>Specialty</th><th>Actions</th></tr></thead>
+            <thead><tr><th>ID</th><th>Name</th><th>Specialty</th><th>Experience Years</th><th>Actions</th></tr></thead>
             <tbody>
               {doctors.map(doc => (
                 <tr key={doc.id}>
                   <td>{doc.id}</td>
-                  <td>{doc.user?.name || "N/A"}</td>
+                  <td>{doc.user?.name || doc.name || "N/A"}</td>
                   <td>{doc.specialty}</td>
+                  <td>{doc.experience_years}</td>
                   <td>
                     <Button size="sm" variant="warning" className="me-2"
                       onClick={() => handleEditDoctor(doc)}>Edit</Button>
@@ -144,9 +196,12 @@ export default function AdminDashboard() {
 
         {/* Jobs */}
         <Tab eventKey="jobs" title="Jobs">
+          <Button variant="primary" className="mb-3" onClick={() => setShowAddJobModal(true)}>Add Job</Button>
           <Table striped bordered hover>
             <thead>
-              <tr><th>ID</th><th>Title</th><th>Department</th><th>Status</th><th>Description</th><th>Requirements</th><th>Actions</th></tr>
+              <tr>
+                <th>ID</th><th>Title</th><th>Department</th><th>Status</th><th>Description</th><th>Requirements</th><th>Actions</th>
+              </tr>
             </thead>
             <tbody>
               {jobs.map(job => (
@@ -158,10 +213,8 @@ export default function AdminDashboard() {
                   <td>{job.description}</td>
                   <td>{job.requirements}</td>
                   <td>
-                    <Button size="sm" variant="warning" className="me-2"
-                      onClick={() => handleEditJob(job)}>Edit</Button>
-                    <Button size="sm" variant="danger"
-                      onClick={() => handleDeleteClick("job", job.id)}>Delete</Button>
+                    <Button size="sm" variant="warning" className="me-2" onClick={() => handleEditJob(job)}>Edit</Button>
+                    <Button size="sm" variant="danger" onClick={() => handleDeleteClick("job", job.id)}>Delete</Button>
                   </td>
                 </tr>
               ))}
@@ -186,19 +239,26 @@ export default function AdminDashboard() {
         </Modal.Footer>
       </Modal>
 
-      {/* Doctor Modal */}
+      {/* Doctor Modal (Edit) */}
       <Modal show={showDoctorModal} onHide={() => setShowDoctorModal(false)}>
         <Modal.Header closeButton><Modal.Title>Edit Doctor</Modal.Title></Modal.Header>
         <Modal.Body>
           {selectedDoctor && (
             <Form>
               <Form.Group className="mb-3">
-                <Form.Label>Name</Form.Label>
-                <Form.Control value={selectedDoctor.name} onChange={e => setSelectedDoctor({...selectedDoctor, name: e.target.value})}/>
+                <Form.Label>Specialty</Form.Label>
+                <Form.Control
+                  value={selectedDoctor.specialty}
+                  onChange={e => setSelectedDoctor({...selectedDoctor, specialty: e.target.value})}
+                />
               </Form.Group>
               <Form.Group className="mb-3">
-                <Form.Label>Specialty</Form.Label>
-                <Form.Control value={selectedDoctor.specialty} onChange={e => setSelectedDoctor({...selectedDoctor, specialty: e.target.value})}/>
+                <Form.Label>Experience Years</Form.Label>
+                <Form.Control
+                  type="number"
+                  value={selectedDoctor.experience_years}
+                  onChange={e => setSelectedDoctor({...selectedDoctor, experience_years: e.target.value})}
+                />
               </Form.Group>
             </Form>
           )}
@@ -209,7 +269,37 @@ export default function AdminDashboard() {
         </Modal.Footer>
       </Modal>
 
-      {/* Job Modal */}
+      {/* Add Doctor Modal */}
+      <Modal show={showAddDoctorModal} onHide={() => setShowAddDoctorModal(false)}>
+        <Modal.Header closeButton><Modal.Title>Add Doctor</Modal.Title></Modal.Header>
+        <Modal.Body>
+         <Form>
+  <Form.Group className="mb-3">
+    <Form.Label>User ID (optional if new)</Form.Label>
+    <Form.Control type="number" value={newDoctor.userId} onChange={e => setNewDoctor({...newDoctor, userId: e.target.value})}/>
+  </Form.Group>
+  <Form.Group className="mb-3">
+    <Form.Label>Name (optional if existing user)</Form.Label>
+    <Form.Control value={newDoctor.name} onChange={e => setNewDoctor({...newDoctor, name: e.target.value})}/>
+  </Form.Group>
+  <Form.Group className="mb-3">
+    <Form.Label>Specialty</Form.Label>
+    <Form.Control value={newDoctor.specialty} onChange={e => setNewDoctor({...newDoctor, specialty: e.target.value})}/>
+  </Form.Group>
+  <Form.Group className="mb-3">
+    <Form.Label>Experience Years</Form.Label>
+    <Form.Control type="number" value={newDoctor.experience_years} onChange={e => setNewDoctor({...newDoctor, experience_years: e.target.value})}/>
+  </Form.Group>
+</Form>
+
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowAddDoctorModal(false)}>Cancel</Button>
+          <Button variant="primary" onClick={handleAddDoctor}>Add Doctor</Button>
+        </Modal.Footer>
+      </Modal>
+
+      {/* Edit Job Modal */}
       <Modal show={showJobModal} onHide={() => setShowJobModal(false)}>
         <Modal.Header closeButton><Modal.Title>Edit Job</Modal.Title></Modal.Header>
         <Modal.Body>
@@ -243,6 +333,40 @@ export default function AdminDashboard() {
           <Button variant="primary" onClick={handleUpdateJob}>Save Changes</Button>
         </Modal.Footer>
       </Modal>
+
+      {/* Add Job Modal */}
+      <Modal show={showAddJobModal} onHide={() => setShowAddJobModal(false)}>
+        <Modal.Header closeButton><Modal.Title>Add Job</Modal.Title></Modal.Header>
+        <Modal.Body>
+          <Form>
+            <Form.Group className="mb-3">
+              <Form.Label>Title</Form.Label>
+              <Form.Control value={newJob.title} onChange={e => setNewJob({...newJob, title: e.target.value})}/>
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Department</Form.Label>
+              <Form.Control value={newJob.department} onChange={e => setNewJob({...newJob, department: e.target.value})}/>
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Status</Form.Label>
+              <Form.Control value={newJob.status} onChange={e => setNewJob({...newJob, status: e.target.value})}/>
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Description</Form.Label>
+              <Form.Control as="textarea" rows={3} value={newJob.description} onChange={e => setNewJob({...newJob, description: e.target.value})}/>
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Requirements</Form.Label>
+              <Form.Control as="textarea" rows={3} value={newJob.requirements} onChange={e => setNewJob({...newJob, requirements: e.target.value})}/>
+            </Form.Group>
+          </Form>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowAddJobModal(false)}>Cancel</Button>
+          <Button variant="primary" onClick={handleAddJob}>Add Job</Button>
+        </Modal.Footer>
+      </Modal>
+
     </Container>
   );
 }
