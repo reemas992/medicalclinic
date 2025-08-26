@@ -14,6 +14,7 @@ import ProtectedRoute from './routes/protectedRoute';
 import AppNavbar from './components/AppNavbar';
 import Footer from './components/Footer';
 import Service from "./components/Services";
+import LocationPage from "./pages/LocationPage";
 import { AuthProvider } from "./context/AuthContext";
 
 
@@ -31,6 +32,7 @@ function App() {
         <Route path="/contact" element={<Contact />} />
         <Route path="/jobs" element={<Jobs />} />
         <Route path="/services" element={<Service />} />
+        <Route path="/location" element={<LocationPage />} />
         <Route path="/evaluations" element={
           <ProtectedRoute>
             <Evaluations />

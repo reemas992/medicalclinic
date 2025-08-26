@@ -20,6 +20,7 @@ const styles = StyleSheet.create({
   },
   label: {
     fontWeight: "bold",
+  
   },
   content: {
     marginLeft: 10,

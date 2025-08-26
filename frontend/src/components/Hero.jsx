@@ -57,6 +57,9 @@ const HeroSection = () => {
               <Button variant="success" size="lg" onClick={() => setShowForm(true)}>
                 Fill Patient Form
               </Button>
+                <Button variant="success" size="lg" className="m-3" onClick={() => window.location.href = "/location"}  >
+                      🚗 How do you find us?
+                    </Button>
             </Container>
           </div>
         </Carousel.Item>
@@ -66,19 +69,53 @@ const HeroSection = () => {
             <div style={overlayStyle}></div>
             <Container style={contentStyle} className="h-100 d-flex flex-column justify-content-center align-items-center text-center text-light">
               <h1 className="fw-bold mb-3">Fast & Reliable</h1>
-              <p className="lead mb-4">Streamline clinic operations effortlessly.</p>
+              <p className="lead mb-4">We have a dedicated team working for your comfort and health.</p>
               <Button variant="success" size="lg" onClick={() => setShowForm(true)}>
                 Fill Patient Form
               </Button>
+               <Button variant="success" size="lg" className="m-3" onClick={() => window.location.href = "/location"}  >
+                      🚗 How do you find us?
+                    </Button>
+
             </Container>
           </div>
         </Carousel.Item>
-      </Carousel>
+        
+
+{/* ✅ Slide 3 */}
+  <Carousel.Item>
+    <div
+      style={{
+        ...carouselItemStyle,
+        backgroundImage:
+          "url('https://png.pngtree.com/background/20230402/original/pngtree-dentist-and-senior-patient-discussing-over-x-ray-at-clinic-vector-picture-image_2261018.jpg')",
+      }}
+    >
+      <div style={overlayStyle}></div>
+      <Container
+        style={contentStyle}
+        className="h-100 d-flex flex-column justify-content-center align-items-center text-center text-light"
+      >
+        <h1 className="fw-bold mb-3">Your Health, Our Priority</h1>
+        <p className="lead mb-4">
+          We have a dedicated team working for your comfort and health.
+        </p>
+        <Button variant="success" size="lg" onClick={() => setShowForm(true)}>
+          Fill Patient Form
+        </Button>
+        <Button variant="success" size="lg" className="m-3" onClick={() => window.location.href = "/location"}  >
+             🚗 How do you find us?
+         </Button>
+      </Container>
+    </div>
+  </Carousel.Item>
+</Carousel>
+    
 
       {/* Modal for Anamnesis Form */}
       <Modal show={showForm} onHide={() => setShowForm(false)} size="lg">
         <Modal.Header closeButton>
-          <Modal.Title>📝Patient Anamnesis Form</Modal.Title>
+          <Modal.Title>Patient Anamnesis Form</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <form>
