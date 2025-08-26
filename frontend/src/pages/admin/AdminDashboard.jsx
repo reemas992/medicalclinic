@@ -59,6 +59,7 @@ export default function AdminDashboard() {
     try {
       switch (confirmData.type) {
         case "doctor":
+            console.log("Deleting doctor with ID:", confirmData.id),
           await deleteDoctor(confirmData.id);
           setDoctors(prev => prev.filter(d => d.id !== confirmData.id));
           break;
@@ -239,65 +240,109 @@ export default function AdminDashboard() {
         </Modal.Footer>
       </Modal>
 
-      {/* Doctor Modal (Edit) */}
-      <Modal show={showDoctorModal} onHide={() => setShowDoctorModal(false)}>
-        <Modal.Header closeButton><Modal.Title>Edit Doctor</Modal.Title></Modal.Header>
-        <Modal.Body>
-          {selectedDoctor && (
-            <Form>
-              <Form.Group className="mb-3">
-                <Form.Label>Specialty</Form.Label>
-                <Form.Control
-                  value={selectedDoctor.specialty}
-                  onChange={e => setSelectedDoctor({...selectedDoctor, specialty: e.target.value})}
-                />
-              </Form.Group>
-              <Form.Group className="mb-3">
-                <Form.Label>Experience Years</Form.Label>
-                <Form.Control
-                  type="number"
-                  value={selectedDoctor.experience_years}
-                  onChange={e => setSelectedDoctor({...selectedDoctor, experience_years: e.target.value})}
-                />
-              </Form.Group>
-            </Form>
-          )}
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowDoctorModal(false)}>Cancel</Button>
-          <Button variant="primary" onClick={handleUpdateDoctor}>Save Changes</Button>
-        </Modal.Footer>
-      </Modal>
-
       {/* Add Doctor Modal */}
-      <Modal show={showAddDoctorModal} onHide={() => setShowAddDoctorModal(false)}>
-        <Modal.Header closeButton><Modal.Title>Add Doctor</Modal.Title></Modal.Header>
-        <Modal.Body>
-         <Form>
-  <Form.Group className="mb-3">
-    <Form.Label>User ID (optional if new)</Form.Label>
-    <Form.Control type="number" value={newDoctor.userId} onChange={e => setNewDoctor({...newDoctor, userId: e.target.value})}/>
-  </Form.Group>
-  <Form.Group className="mb-3">
-    <Form.Label>Name (optional if existing user)</Form.Label>
-    <Form.Control value={newDoctor.name} onChange={e => setNewDoctor({...newDoctor, name: e.target.value})}/>
-  </Form.Group>
-  <Form.Group className="mb-3">
-    <Form.Label>Specialty</Form.Label>
-    <Form.Control value={newDoctor.specialty} onChange={e => setNewDoctor({...newDoctor, specialty: e.target.value})}/>
-  </Form.Group>
-  <Form.Group className="mb-3">
-    <Form.Label>Experience Years</Form.Label>
-    <Form.Control type="number" value={newDoctor.experience_years} onChange={e => setNewDoctor({...newDoctor, experience_years: e.target.value})}/>
-  </Form.Group>
-</Form>
+<Modal show={showAddDoctorModal} onHide={() => setShowAddDoctorModal(false)}>
+  <Modal.Header closeButton>
+    <Modal.Title>Add Doctor</Modal.Title>
+  </Modal.Header>
+  <Modal.Body>
+    <Form>
+      <Form.Group className="mb-3">
+        <Form.Label>User ID</Form.Label>
+        <Form.Control
+          type="number"
+          value={newDoctor.userId}
+          onChange={e => setNewDoctor({...newDoctor, userId: e.target.value})}
+        />
+      </Form.Group>
+      <Form.Group className="mb-3">
+        <Form.Label>Name</Form.Label>
+        <Form.Control
+          type="text"
+          value={newDoctor.name}
+          onChange={e => setNewDoctor({...newDoctor, name: e.target.value})}
+        />
+      </Form.Group>
+      <Form.Group className="mb-3">
+        <Form.Label>Specialty</Form.Label>
+        <Form.Control
+          type="text"
+          value={newDoctor.specialty}
+          onChange={e => setNewDoctor({...newDoctor, specialty: e.target.value})}
+        />
+      </Form.Group>
+      <Form.Group className="mb-3">
+        <Form.Label>Experience Years</Form.Label>
+        <Form.Control
+          type="number"
+          value={newDoctor.experience_years}
+          onChange={e => setNewDoctor({...newDoctor, experience_years: e.target.value})}
+        />
+      </Form.Group>
+      <Form.Group className="mb-3">
+        <Form.Label>Image URL</Form.Label>
+        <Form.Control
+          type="text"
+          value={newDoctor.image}
+          onChange={e => setNewDoctor({...newDoctor, image: e.target.value})}
+        />
+      </Form.Group>
+    </Form>
+  </Modal.Body>
+  <Modal.Footer>
+    <Button variant="secondary" onClick={() => setShowAddDoctorModal(false)}>Cancel</Button>
+    <Button variant="primary" onClick={handleAddDoctor}>Add Doctor</Button>
+  </Modal.Footer>
+</Modal>
 
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowAddDoctorModal(false)}>Cancel</Button>
-          <Button variant="primary" onClick={handleAddDoctor}>Add Doctor</Button>
-        </Modal.Footer>
-      </Modal>
+{/* Edit Doctor Modal */}
+<Modal show={showDoctorModal} onHide={() => setShowDoctorModal(false)}>
+  <Modal.Header closeButton>
+    <Modal.Title>Edit Doctor</Modal.Title>
+  </Modal.Header>
+  <Modal.Body>
+    {selectedDoctor && (
+      <Form>
+        <Form.Group className="mb-3">
+          <Form.Label>Name</Form.Label>
+          <Form.Control
+            type="text"
+            value={selectedDoctor.name}
+            onChange={e => setSelectedDoctor({...selectedDoctor, name: e.target.value})}
+          />
+        </Form.Group>
+        <Form.Group className="mb-3">
+          <Form.Label>Specialty</Form.Label>
+          <Form.Control
+            type="text"
+            value={selectedDoctor.specialty}
+            onChange={e => setSelectedDoctor({...selectedDoctor, specialty: e.target.value})}
+          />
+        </Form.Group>
+        <Form.Group className="mb-3">
+          <Form.Label>Experience Years</Form.Label>
+          <Form.Control
+            type="number"
+            value={selectedDoctor.experience_years}
+            onChange={e => setSelectedDoctor({...selectedDoctor, experience_years: e.target.value})}
+          />
+        </Form.Group>
+        <Form.Group className="mb-3">
+          <Form.Label>Image URL</Form.Label>
+          <Form.Control
+            type="text"
+            value={selectedDoctor.image}
+            onChange={e => setSelectedDoctor({...selectedDoctor, image: e.target.value})}
+          />
+        </Form.Group>
+      </Form>
+    )}
+  </Modal.Body>
+  <Modal.Footer>
+    <Button variant="secondary" onClick={() => setShowDoctorModal(false)}>Cancel</Button>
+    <Button variant="primary" onClick={handleUpdateDoctor}>Save Changes</Button>
+  </Modal.Footer>
+</Modal>
 
       {/* Edit Job Modal */}
       <Modal show={showJobModal} onHide={() => setShowJobModal(false)}>

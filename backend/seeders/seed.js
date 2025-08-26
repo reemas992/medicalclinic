@@ -5,8 +5,6 @@ const { faker } = require('@faker-js/faker');
 async function seed() {
   try {
     console.log('🌱 Starting seeding...');
-
-    // مزامنة قاعدة البيانات بدون مسح البيانات القديمة
     await sequelize.sync({ alter: true });
     console.log('✅ Database synced!');
 
@@ -15,27 +13,29 @@ async function seed() {
     for (let i = 1; i <= 3; i++) {
       const [admin] = await User.findOrCreate({
         where: { email: `admin${i}@clinic.com` },
-        defaults: {
-          name: `Admin ${i}`,
-          password: 'admin123', // بدون تشفير
-          role: 'admin'
-        }
+        defaults: { name: `Admin ${i}`, password: 'admin123', role: 'admin' }
       });
       admins.push(admin);
     }
 
     // 2️⃣ Doctors
-    const specialties = ['Cardiology', 'Dermatology', 'Pediatrics', 'Neurology', 'Orthopedics'];
+    const specialties = ['Cardiology', 'Dermatology', 'Pediatrics', 'Neurology', 'Orthopedics', 'General Medicine'];
+    // صور حقيقية أو شبه واقعية بدل Placeholder
+    const doctorImages = [
+      "https://th.bing.com/th/id/OIP.ksWndG2c6RSEBkWA6Uo59wHaIU?w=161&h=182&c=7&r=0&o=7&dpr=1.3&pid=1.7&rm=3",
+      "https://th.bing.com/th/id/OIP.JW_4m4RVV4ywf0aiB6TWrgHaLH?w=142&h=213&c=7&r=0&o=7&dpr=1.3&pid=1.7&rm=3",
+      "https://th.bing.com/th/id/OIP.qNSiJ7PqVb9R24N0D_4bewHaNK?w=120&h=213&c=7&r=0&o=7&dpr=1.3&pid=1.7&rm=3",
+      "https://th.bing.com/th/id/OIP.NxTTkG4A_Uapp2f1T1Qz3gHaKz?w=146&h=213&c=7&r=0&o=7&dpr=1.3&pid=1.7&rm=3",
+      "https://th.bing.com/th/id/OIP.9wHb7nRDp6VuwJPUbABsFAHaLu?w=115&h=180&c=7&r=0&o=5&dpr=1.3&pid=1.7",
+      "https://th.bing.com/th?q=Doktor+Bilder&w=120&h=120&c=1&rs=1&qlt=90&cb=1&dpr=1.3&pid=InlineBlock&mkt=de-DE&cc=DE&setlang=de&adlt=moderate&t=1&mw=247"
+
+    ];
     const doctors = [];
 
     for (let i = 0; i < specialties.length; i++) {
       const [user] = await User.findOrCreate({
         where: { email: `doctor${i + 1}@clinic.com` },
-        defaults: {
-          name: `Dr. ${faker.person.firstName()}`,
-          password: 'doctor123', // بدون تشفير
-          role: 'doctor'
-        }
+        defaults: { name: `Dr. ${faker.person.firstName()} ${faker.person.lastName()}`, password: 'doctor123', role: 'doctor' }
       });
 
       const [doctor] = await Doctor.findOrCreate({
@@ -44,10 +44,10 @@ async function seed() {
           specialty: specialties[i],
           bio: faker.lorem.sentence(),
           experience_years: faker.number.int({ min: 5, max: 20 }),
-          phone: faker.phone.number()
+          phone: faker.phone.number(),
+          image: doctorImages[i] // ← الصور الثابتة
         }
       });
-
       doctors.push(doctor);
     }
 
@@ -56,11 +56,7 @@ async function seed() {
     for (let i = 1; i <= 50; i++) {
       const [patient] = await User.findOrCreate({
         where: { email: `patient${i}@clinic.com` },
-        defaults: {
-          name: faker.person.fullName(),
-          password: 'patient123', // بدون تشفير
-          role: 'patient'
-        }
+        defaults: { name: faker.person.fullName(), password: 'patient123', role: 'patient' }
       });
       patients.push(patient);
     }
@@ -124,7 +120,7 @@ async function seed() {
       await Job.findOrCreate({ where: { title: job.title }, defaults: job });
     }
 
-    // 8️⃣ Evaluations (مرتبط بـ userId)
+    // 8️⃣ Evaluations
     const positiveComments = [
       "Excellent service and very professional!",
       "Staff were very kind and helpful.",
@@ -132,7 +128,6 @@ async function seed() {
       "The clinic staff were very friendly.",
       "Quick and smooth visit!"
     ];
-
     const neutralComments = [
       "It was okay, but could be faster.",
       "Good, but the waiting time was long.",
@@ -141,7 +136,6 @@ async function seed() {
 
     for (let i = 0; i < 20; i++) {
       const patient = faker.helpers.arrayElement(patients);
-
       const rating = Math.random() > 0.2
         ? faker.number.int({ min: 4, max: 5 })
         : faker.number.int({ min: 2, max: 3 });
@@ -151,9 +145,7 @@ async function seed() {
         defaults: {
           userId: patient.id,
           rating,
-          comment: rating >= 4
-            ? faker.helpers.arrayElement(positiveComments)
-            : faker.helpers.arrayElement(neutralComments)
+          comment: rating >= 4 ? faker.helpers.arrayElement(positiveComments) : faker.helpers.arrayElement(neutralComments)
         }
       });
     }

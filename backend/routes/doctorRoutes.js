@@ -11,4 +11,5 @@ router.post('/', auth, requireRole('admin'), addDoctor);
 router.put('/:id', auth, requireRole('admin'), updateDoctor);
 router.delete('/:id', auth, requireRole('admin'), deleteDoctor);
 
+
 module.exports = router;
