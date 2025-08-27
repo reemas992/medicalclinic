@@ -28,9 +28,9 @@ const Doctor = sequelize.define("Doctor", {
   phone: {
     type: DataTypes.STRING,
     allowNull: true
-  },// Doctor.js
+  },
 image: {
-  type: DataTypes.STRING, // يمكنك تخزين الرابط أو اسم الملف
+  type: DataTypes.STRING, 
   allowNull: true
 }
 

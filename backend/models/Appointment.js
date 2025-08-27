@@ -31,18 +31,7 @@ const Appointment = sequelize.define("Appointment", {
     allowNull: true
   }
 }, {
-  timestamps: true,
-  indexes: [
-    {
-      fields: ['patientId']
-    },
-    {
-      fields: ['doctorId']
-    },
-    {
-      fields: ['date']
-    }
-  ]
+  timestamps: true
 });
 
 module.exports = Appointment;

@@ -13,7 +13,8 @@ const seed = require('./seeders/seed');
 const evaluationRoutes = require("./routes/evaluationRoutes");
 const listEndpoints = require('express-list-endpoints');
 const jobsRoutes = require('./routes/jobRoutes');
-const holidayRoutes=require('./routes/holidayRoutes')
+const holidayRoutes=require('./routes/holidayRoutes');
+const { fa } = require('@faker-js/faker');
 const app = express();
 app.use(cors());
 app.use(express.json());
@@ -32,7 +33,7 @@ app.get('/', (req, res) => res.send('API is running'));
 app.get('/api/doctors/ping', (req, res) => res.send('pong'));
 console.log(listEndpoints(app));
 
-sequelize.sync({ force:false})
+sequelize.sync({ force: false }) // استخدم { force: true } لإعادة إنشاء الجداول أثناء التطوي
   .then(async () =>  {
     console.log("calling Seed.js...");
  

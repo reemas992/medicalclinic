@@ -1,4 +1,4 @@
-const { Doctor, User } = require('../models');
+const { Doctor, User,DoctorSchedule } = require('../models');
 
 // Get one doctor
 const getDoctor = async (req, res) => {
@@ -13,10 +13,15 @@ const getDoctor = async (req, res) => {
 
 
 // Get all doctors
+
+
 const getDoctors = async (req, res) => {
   try {
     const doctors = await Doctor.findAll({
-      include: [{ model: User, as: 'user', attributes: ['id', 'name', 'email'] }]
+      include: [
+        { model: User, as: 'user', attributes: ['id', 'name', 'email'] },
+        { model: DoctorSchedule, as: 'schedules' } // ← هكذا نحصل على الجداول
+      ]
     });
     res.json(doctors);
   } catch (err) {

@@ -2,6 +2,18 @@
 import api from "./axios"; // 
 
 
+// 📌 Get all doctors including their schedule
+export const getDoctors = async () => {
+  const res = await api.get("/doctors");
+  return res.data;
+};
+
+// 📌 Get single doctor by ID (optional)
+export const getDoctorById = async (id) => {
+  const res = await api.get(`/doctors/${id}`);
+  return res.data;
+};
+
 // 📌 جلب طبيب معين حسب الـ ID
 export const getDoctor = async (id) => {
   try {
@@ -13,11 +25,6 @@ export const getDoctor = async (id) => {
   }
 };
 
-
-export const getDoctors = async () => {
-  const res = await api.get("/doctors");
-  return res.data;
-};
 
 export const addDoctor = async (doctorData) => {
   const res = await api.post("/doctors", doctorData);

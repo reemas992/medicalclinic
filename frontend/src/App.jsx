@@ -16,7 +16,7 @@ import Footer from './components/Footer';
 import Service from "./components/Services";
 import LocationPage from "./pages/LocationPage";
 import { AuthProvider } from "./context/AuthContext";
-
+import AnamnesisPDFComponent from './components/AnamnesisPDF';
 
 
 function App() {
@@ -33,6 +33,7 @@ function App() {
         <Route path="/jobs" element={<Jobs />} />
         <Route path="/services" element={<Service />} />
         <Route path="/location" element={<LocationPage />} />
+      
         <Route path="/evaluations" element={
           <ProtectedRoute>
             <Evaluations />

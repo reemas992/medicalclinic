@@ -2,127 +2,86 @@ const { Appointment, Doctor, DoctorSchedule, Holiday, User } = require('../model
 const { Op } = require('sequelize');
 const moment = require('moment');
 
-// Create new appointment
-exports.bookAppointment = async (req, res) => {
+
+
+// ✅ إرجاع مواعيد المريض
+exports.getAppointmentsByPatient = async (req, res) => {
   try {
-    const { doctorId, date, notes } = req.body;
-    
-    if (!doctorId || !date) {
-      return res.status(400).json({ error: 'Doctor ID and date are required' });
-    }
+    const { id } = req.params;
 
-    const patientId = req.user.id;
-    const appointmentDate = new Date(date);
-    const dayOfWeek = appointmentDate.getDay(); // 0 = Sunday, 1 = Monday, ...
-    const dateOnly = moment(appointmentDate).format('YYYY-MM-DD');
-
-    // 1. Check if it's a holiday
-    const holiday = await Holiday.findOne({
-      where: { date: dateOnly }
-    });
-
-    if (holiday) {
-      return res.status(400).json({ 
-        error: `Clinic is closed on ${holiday.date} due to: ${holiday.reason || 'Holiday'}` 
-      });
-    }
-
-    // 2. Check doctor availability for this day
-    const schedule = await DoctorSchedule.findOne({
-      where: { 
-        doctorId, 
-        dayOfWeek 
-      }
-    });
-
-    if (!schedule) {
-      return res.status(400).json({ error: 'Doctor is not available on this day' });
-    }
-
-    // 3. Check if appointment time is within doctor's working hours
-    const appointmentTime = moment(appointmentDate);
-    const startTime = moment(schedule.startTime, 'HH:mm:ss');
-    const endTime = moment(schedule.endTime, 'HH:mm:ss');
-    
-    const appointmentTimeOnly = moment(appointmentTime.format('HH:mm:ss'), 'HH:mm:ss');
-    
-    if (appointmentTimeOnly.isBefore(startTime) || appointmentTimeOnly.isAfter(endTime)) {
-      return res.status(400).json({ 
-        error: `Appointment time is outside working hours. Working hours: ${schedule.startTime} - ${schedule.endTime}` 
-      });
-    }
-// تحقق من فترات الاستراحة
-const isDuringBreak = schedule.breaks.some(b => {
-  const breakStart = moment(b.start, 'HH:mm:ss');
-  const breakEnd = moment(b.end, 'HH:mm:ss');
-  return appointmentTimeOnly.isBetween(breakStart, breakEnd, null, '[)');
-});
-
-if (isDuringBreak) {
-  return res.status(400).json({ 
-    error: `Appointment time falls within a break period. Breaks: ${schedule.breaks.map(b => `${b.start}-${b.end}`).join(', ')}` 
-  });
-}
-
-    // 4. Check for conflicting appointments
-    const existingAppointment = await Appointment.findOne({
-      where: {
-        doctorId,
-        date: {
-          [Op.between]: [
-            moment(appointmentDate).subtract(29, 'minutes').toDate(),
-            moment(appointmentDate).add(29, 'minutes').toDate()
-          ]
-        },
-        status: {
-          [Op.notIn]: ['cancelled', 'no_show']
-        }
-      }
-    });
-
-    if (existingAppointment) {
-      return res.status(400).json({ error: 'There is another appointment at this time' });
-    }
-
-    // 5. Create the appointment
-    const appointment = await Appointment.create({
-      doctorId,
-      patientId,
-      date: appointmentDate,
-      notes: notes || null,
-      status: 'scheduled'
-    });
-
-    // 6. Get appointment details with related information
-    const appointmentWithDetails = await Appointment.findByPk(appointment.id, {
+    const appointments = await Appointment.findAll({
+      where: { patientId: id },
+      order: [['date', 'ASC']],
       include: [
         {
           model: Doctor,
           as: 'doctor',
-          include: [{ 
-            model: User, 
-            as: 'user',
-            attributes: ['name', 'email'] 
-          }]
-        },
-        {
-          model: User,
-          as: 'patient',
-          attributes: ['name', 'email']
+          include: [
+            {
+              model: User,
+              as: 'user',
+              attributes: ['id', 'name', 'email']
+            }
+          ]
         }
       ]
     });
 
-    res.status(201).json({
-      message: 'Appointment booked successfully',
-      appointment: appointmentWithDetails
-    });
+    res.json(appointments);
   } catch (err) {
-    console.error('Error booking appointment:', err);
-    res.status(500).json({ error: 'Error booking appointment' });
+    console.error('❌ Error fetching appointments by patient:', err);
+    res.status(500).json({ error: 'Server error' });
   }
 };
 
+
+exports.bookAppointment = async (req,res) => {
+  try {
+    const { doctorId, date } = req.body;
+    const patientId = req.user.id;
+
+    if (!doctorId || !date) return res.status(400).json({ error: "Doctor ID and date required" });
+
+    const appointmentDate = moment(date);
+
+    // Check existing appointments for same slot
+    const conflict = await Appointment.findOne({
+      where: {
+        doctorId,
+        date: appointmentDate.toDate(),
+        status: { [Op.notIn]: ['cancelled','no_show'] }
+      }
+    });
+
+    if (conflict) return res.status(400).json({ error: "This slot is already booked" });
+
+    const appointment = await Appointment.create({ doctorId, patientId, date: appointmentDate.toDate() });
+
+    const result = await Appointment.findByPk(appointment.id, {
+      include: [
+        { model: Doctor, as: 'doctor', include: [{ model: User, as: 'user', attributes: ['name'] }] },
+        { model: User, as: 'patient', attributes: ['name'] }
+      ]
+    });
+
+    res.status(201).json({ message: "Booked successfully", appointment: result });
+
+  } catch(err) { res.status(500).json({ error: err.message }); }
+};
+
+// Get current user's appointments
+exports.getMyAppointments = async (req, res) => {
+  try {
+    const appointments = await Appointment.findAll({
+      where: { patientId: req.user.id },
+      include: [{ model: Doctor, as: 'doctor', include: [{ model: User, as: 'user', attributes: ['name'] }] }],
+      order: [['date', 'ASC']]
+    });
+    res.json(appointments);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch appointments' });
+  }
+};
 // Get all appointments (admin only)
 exports.getAllAppointments = async (req, res) => {
   try {
@@ -151,50 +110,8 @@ exports.getAllAppointments = async (req, res) => {
   }
 };
 
-// Get current user's appointments
-exports.getMyAppointments = async (req, res) => {
-  try {
-    let whereClause = {};
-    
-    // For patients, get their appointments
-    if (req.user.role === 'patient') {
-      whereClause = { patientId: req.user.id };
-    } 
-    // For doctors, get appointments assigned to them
-    else if (req.user.role === 'doctor') {
-      // First get the doctor record for this user
-      const doctor = await Doctor.findOne({ where: { userId: req.user.id } });
-      if (!doctor) {
-        return res.status(404).json({ error: 'Doctor profile not found' });
-      }
-      whereClause = { doctorId: doctor.id };
-    }
-    
-    const appointments = await Appointment.findAll({
-      where: whereClause,
-      include: [
-        {
-          model: Doctor,
-          as: 'doctor',
-          include: [{ 
-            model: User, 
-            as: 'user',
-            attributes: ['name', 'email'] 
-          }]
-        },
-        {
-          model: User,
-          as: 'patient',
-          attributes: ['name', 'email']
-        }
-      ],
-      order: [['date', 'DESC']]
-    });
-    res.json(appointments);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-};
+
+
 
 // Cancel appointment
 exports.cancelAppointment = async (req, res) => {

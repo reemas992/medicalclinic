@@ -9,18 +9,15 @@ async function seed() {
     console.log('✅ Database synced!');
 
     // 1️⃣ Admins
-    const admins = [];
     for (let i = 1; i <= 3; i++) {
-      const [admin] = await User.findOrCreate({
+      await User.findOrCreate({
         where: { email: `admin${i}@clinic.com` },
         defaults: { name: `Admin ${i}`, password: 'admin123', role: 'admin' }
       });
-      admins.push(admin);
     }
 
     // 2️⃣ Doctors
     const specialties = ['Cardiology', 'Dermatology', 'Pediatrics', 'Neurology', 'Orthopedics', 'General Medicine'];
-    // صور حقيقية أو شبه واقعية بدل Placeholder
     const doctorImages = [
       "https://th.bing.com/th/id/OIP.ksWndG2c6RSEBkWA6Uo59wHaIU?w=161&h=182&c=7&r=0&o=7&dpr=1.3&pid=1.7&rm=3",
       "https://th.bing.com/th/id/OIP.JW_4m4RVV4ywf0aiB6TWrgHaLH?w=142&h=213&c=7&r=0&o=7&dpr=1.3&pid=1.7&rm=3",
@@ -28,8 +25,8 @@ async function seed() {
       "https://th.bing.com/th/id/OIP.NxTTkG4A_Uapp2f1T1Qz3gHaKz?w=146&h=213&c=7&r=0&o=7&dpr=1.3&pid=1.7&rm=3",
       "https://th.bing.com/th/id/OIP.9wHb7nRDp6VuwJPUbABsFAHaLu?w=115&h=180&c=7&r=0&o=5&dpr=1.3&pid=1.7",
       "https://th.bing.com/th?q=Doktor+Bilder&w=120&h=120&c=1&rs=1&qlt=90&cb=1&dpr=1.3&pid=InlineBlock&mkt=de-DE&cc=DE&setlang=de&adlt=moderate&t=1&mw=247"
-
     ];
+
     const doctors = [];
 
     for (let i = 0; i < specialties.length; i++) {
@@ -45,9 +42,10 @@ async function seed() {
           bio: faker.lorem.sentence(),
           experience_years: faker.number.int({ min: 5, max: 20 }),
           phone: faker.phone.number(),
-          image: doctorImages[i] // ← الصور الثابتة
+          image: doctorImages[i]
         }
       });
+
       doctors.push(doctor);
     }
 
@@ -61,9 +59,9 @@ async function seed() {
       patients.push(patient);
     }
 
-    // 4️⃣ Doctor Schedules
+    // 4️⃣ Doctor Schedules (نسخة جديدة متوافقة مع breaks كـ JSON)
     for (const doctor of doctors) {
-      const availableDays = faker.helpers.arrayElements([1, 2, 3, 4, 5, 6], 3);
+      const availableDays = faker.helpers.arrayElements([1, 2, 3, 4, 5, 6], 3); // ثلاثة أيام عشوائية لكل دكتور
       for (const day of availableDays) {
         await DoctorSchedule.findOrCreate({
           where: { doctorId: doctor.id, dayOfWeek: day },
@@ -102,7 +100,6 @@ async function seed() {
       { date: '2025-12-25', reason: 'Christmas' },
       { date: '2025-12-31', reason: 'New Year Eve' }
     ];
-
     for (const holiday of holidaysData) {
       await Holiday.findOrCreate({ where: { date: holiday.date }, defaults: { reason: holiday.reason } });
     }
@@ -115,7 +112,6 @@ async function seed() {
       { title: "Pharmacist", department: "Pharmacy", description: "Dispense medications and advise patients.", requirements: "Pharmacy degree, 2+ years experience", status: "open" },
       { title: "IT Support", department: "IT", description: "Maintain clinic systems and provide tech support.", requirements: "Knowledge of networks & troubleshooting", status: "open" }
     ];
-
     for (const job of jobsData) {
       await Job.findOrCreate({ where: { title: job.title }, defaults: job });
     }
@@ -133,13 +129,9 @@ async function seed() {
       "Good, but the waiting time was long.",
       "The experience was average."
     ];
-
     for (let i = 0; i < 20; i++) {
       const patient = faker.helpers.arrayElement(patients);
-      const rating = Math.random() > 0.2
-        ? faker.number.int({ min: 4, max: 5 })
-        : faker.number.int({ min: 2, max: 3 });
-
+      const rating = Math.random() > 0.2 ? faker.number.int({ min: 4, max: 5 }) : faker.number.int({ min: 2, max: 3 });
       await Evaluation.findOrCreate({
         where: { userId: patient.id, comment: faker.lorem.sentence() },
         defaults: {

@@ -26,7 +26,7 @@ export default function Home() {
       <HolidayAlert />
       <Hero />
       <Container className="py-5">
-        <h2 className="mb-4"> Our Doctors</h2>
+        <h2 className="mb-4 text-center"> Our Doctors</h2>
         <Row>
           {doctors.slice(0, 6).map((doc) => (
             <Col md={4} key={doc.id}>

@@ -26,15 +26,14 @@ const DoctorSchedule = sequelize.define('DoctorSchedule', {
     type: DataTypes.TIME,
     allowNull: false
   },
+ 
   breaks: {
-  type: DataTypes.JSON, // [{ start: "12:00:00", end: "13:00:00" }, ...]
-  allowNull: true,
-  defaultValue: []
-}
-
+    type: DataTypes.JSON, // [{ start: "12:00:00", end: "13:00:00" }, ...]
+    allowNull: true,
+    defaultValue: []
+  }
 }, {
   timestamps: false
 });
 
 module.exports = DoctorSchedule;
-
