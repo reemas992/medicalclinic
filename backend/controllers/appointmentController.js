@@ -114,24 +114,41 @@ exports.getAllAppointments = async (req, res) => {
 
 
 // Cancel appointment
+// Cancel appointment
 exports.cancelAppointment = async (req, res) => {
   try {
     const appt = await Appointment.findByPk(req.params.id);
     if (!appt) return res.status(404).json({ error: 'Appointment not found' });
 
-    // Check user authorization
-    if (req.user.role !== 'admin' && req.user.id !== appt.patientId) {
+    const user = req.user;
+
+    // تحقق من الصلاحيات
+    let isAuthorized = false;
+
+    if (user.role === 'admin') {
+      isAuthorized = true; // admin يمكنه إلغاء أي موعد
+    } else if (user.role === 'patient' && user.id === appt.patientId) {
+      isAuthorized = true; // المريض يمكنه إلغاء مواعيده فقط
+    } else if (user.role === 'doctor') {
+      // تحقق إذا كان هذا الطبيب مرتبط بالموعد
+      const doctor = await Doctor.findOne({ where: { userId: user.id } });
+      if (doctor && doctor.id === appt.doctorId) isAuthorized = true;
+    }
+
+    if (!isAuthorized) {
       return res.status(403).json({ error: 'Unauthorized' });
     }
 
     appt.status = 'cancelled';
     await appt.save();
-    
-    res.json({ message: 'Appointment cancelled successfully' });
+
+    res.json({ message: 'Appointment cancelled successfully', appointment: appt });
   } catch (err) {
+    console.error('❌ Cancel Appointment Error:', err);
     res.status(500).json({ error: err.message });
   }
 };
+
 
 // Update appointment status (admin only)
 exports.updateAppointmentStatus = async (req, res) => {
