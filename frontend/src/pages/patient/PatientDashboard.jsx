@@ -12,7 +12,7 @@ export default function PatientDashboard() {
   const [selectedDate, setSelectedDate] = useState("");
   const [availableTimes, setAvailableTimes] = useState([]);
   const [selectedTime, setSelectedTime] = useState("");
-  const [patientId] = useState(19); // مؤقتاً يمكن جلبه من JWT
+  const [patientId] = useState(19); // يمكن جلبه من JWT لاحقًا
 
   useEffect(() => {
     fetchAppointments();
@@ -30,8 +30,7 @@ export default function PatientDashboard() {
 
   const fetchDoctors = async () => {
     try {
-      const data = await getDoctors();
-      setDoctors(data);
+      setDoctors(await getDoctors());
     } catch (err) {
       console.error(err);
     }
@@ -56,7 +55,7 @@ export default function PatientDashboard() {
 
     if (!schedule) {
       setAvailableTimes([]);
-      toast.info("Doctor unavailable on this day");
+      toast.info("Doctor is not available on this day");
       return;
     }
 
@@ -64,15 +63,15 @@ export default function PatientDashboard() {
     let start = moment(schedule.startTime, "HH:mm:ss");
     const end = moment(schedule.endTime, "HH:mm:ss");
 
-    while (start.isBefore(end)) {
+    while (start.isBefore(end) && times.length < 8) {
       const t = start.format("HH:mm");
       const inBreak = schedule.breaks?.some(b => {
         const bStart = moment(b.start, "HH:mm:ss");
         const bEnd = moment(b.end, "HH:mm:ss");
-        return start.isBetween(bStart, bEnd, null, '[)');
+        return start.isBetween(bStart, bEnd, null, "[)");
       });
       if (!inBreak) times.push(t);
-      start.add(1, 'hours');
+      start.add(1, "hours");
     }
 
     const booked = appointments
@@ -84,12 +83,12 @@ export default function PatientDashboard() {
 
   const handleBook = async () => {
     if (!selectedDoctor || !selectedDate || !selectedTime) {
-      toast.warning("Select doctor, date, and time");
+      toast.warning("Select all fields");
       return;
     }
     try {
       const datetime = moment(`${selectedDate} ${selectedTime}`, "YYYY-MM-DD HH:mm").toISOString();
-      await bookAppointment({ doctorId: selectedDoctor.id, date: datetime }); 
+      await bookAppointment({ doctorId: selectedDoctor.id, date: datetime });
       toast.success("Appointment booked!");
       fetchAppointments();
       setSelectedDate("");
@@ -115,7 +114,13 @@ export default function PatientDashboard() {
       <h2>My Appointments</h2>
       <Table striped bordered hover>
         <thead>
-          <tr><th>ID</th><th>Doctor</th><th>Date & Time</th><th>Status</th><th>Action</th></tr>
+          <tr>
+            <th>ID</th>
+            <th>Doctor</th>
+            <th>Date & Time</th>
+            <th>Status</th>
+            <th>Action</th>
+          </tr>
         </thead>
         <tbody>
           {appointments.map(a => (
@@ -138,26 +143,33 @@ export default function PatientDashboard() {
           <Form.Label>Doctor</Form.Label>
           <Form.Select onChange={e => handleDoctorChange(e.target.value)}>
             <option value="">--Select--</option>
-            {doctors.map(d => <option key={d.id} value={d.id}>{d.user.name} ({d.specialty})</option>)}
+            {doctors.map(d =>
+              <option key={d.id} value={d.id}>
+                {d.user.name} ({d.specialty})
+              </option>
+            )}
           </Form.Select>
         </Form.Group>
 
         {selectedDoctor && <>
           <Form.Group className="mb-2">
             <Form.Label>Date</Form.Label>
-            <Form.Control type="date" value={selectedDate} onChange={handleDateChange}/>
+            <Form.Control type="date" value={selectedDate} onChange={handleDateChange} />
           </Form.Group>
 
-          {availableTimes.length > 0 && <Form.Group className="mb-2">
-            <Form.Label>Time</Form.Label>
-            <Form.Select value={selectedTime} onChange={e => setSelectedTime(e.target.value)}>
-              <option value="">--Select--</option>
-              {availableTimes.map(t => <option key={t} value={t}>{t}</option>)}
-            </Form.Select>
-          </Form.Group>}
+          {availableTimes.length > 0 ? (
+            <Form.Group className="mb-2">
+              <Form.Label>Time</Form.Label>
+              <Form.Select value={selectedTime} onChange={e => setSelectedTime(e.target.value)}>
+                <option value="">--Select--</option>
+                {availableTimes.map(t => <option key={t} value={t}>{t}</option>)}
+              </Form.Select>
+            </Form.Group>
+          ) : (
+            selectedDate && <p className="text-danger">Doctor is not available on this day</p>
+          )}
 
           <Button onClick={handleBook} disabled={availableTimes.length === 0}>Book Appointment</Button>
-          {availableTimes.length === 0 && <p>No available slots for this day</p>}
         </>}
       </Form>
     </Container>
