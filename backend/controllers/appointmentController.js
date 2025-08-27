@@ -154,3 +154,25 @@ exports.updateAppointmentStatus = async (req, res) => {
     res.status(500).json({ error: "Failed to update appointment status" });
   }
 };
+// GET /appointments/my-doctor
+exports.getDoctorAppointments = async (req, res) => {
+  try {
+    // إيجاد الطبيب المرتبط بالمستخدم
+    const doctor = await Doctor.findOne({ where: { userId: req.user.id } });
+    if (!doctor) return res.status(404).json({ error: 'Doctor not found' });
+
+    const appointments = await Appointment.findAll({
+      where: { doctorId: doctor.id },
+      include: [
+        { model: User, as: 'patient', attributes: ['id', 'name', 'email'] },
+        { model: Doctor, as: 'doctor', include: [{ model: User, as: 'user', attributes: ['name'] }] }
+      ],
+      order: [['date', 'ASC']]
+    });
+
+    res.json(appointments);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to fetch doctor appointments' });
+  }
+};

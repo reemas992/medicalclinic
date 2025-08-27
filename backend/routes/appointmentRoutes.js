@@ -5,7 +5,7 @@ const {
   getMyAppointments, 
   getAllAppointments, 
   updateAppointmentStatus ,
-  getAppointmentsByPatient
+  getAppointmentsByPatient,getDoctorAppointments
 } = require('../controllers/appointmentController');
 const auth = require('../middleware/auth');
 const requireRole = require('../middleware/role');
@@ -27,5 +27,6 @@ router.get('/', auth, requireRole('admin'), getAllAppointments);
 // Update appointment status (admin only)
 router.put('/:id/status', auth, requireRole('admin'), updateAppointmentStatus);
 router.get('/patient/:id', auth,  getAppointmentsByPatient);
+router.get('/my-doctor', auth, getDoctorAppointments);
 
 module.exports = router;

@@ -17,9 +17,42 @@ const HeroSection = () => {
     familyHistory: ""
   });
 
+   const [errors, setErrors] = useState({});
   const handleChange = (e) => {
-    setPatientData({ ...patientData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+
+    // phone فقط أرقام
+    if (name === "phone" && value !== "" && !/^\d+$/.test(value)) {
+      return;
+    }
+
+    setPatientData({ ...patientData, [name]: value });
   };
+
+
+
+ 
+
+  const validateForm = () => {
+    let newErrors = {};
+    Object.entries(patientData).forEach(([key, value]) => {
+      if (!value.trim()) {
+        newErrors[key] = "This field is required";
+      }
+    });
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (validateForm()) {
+      console.log("✅ Patient data submitted:", patientData);
+      // هنا ممكن تبعت البيانات للباك إند لاحقاً
+    }
+  };
+
 
   const carouselItemStyle = {
     height: "70vh",
@@ -113,58 +146,182 @@ const HeroSection = () => {
     
 
       {/* Modal for Anamnesis Form */}
+   {/* Modal for Anamnesis Form */}
       <Modal show={showForm} onHide={() => setShowForm(false)} size="lg">
         <Modal.Header closeButton>
           <Modal.Title>Patient Anamnesis Form</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          <form>
+          <form onSubmit={handleSubmit}>
+            {/* Name */}
             <div className="mb-2">
               <label>Name</label>
-              <input type="text" className="form-control" name="name" value={patientData.name} onChange={handleChange} />
+              <input
+                type="text"
+                className="form-control"
+                name="name"
+                value={patientData.name}
+                onChange={handleChange}
+                required
+              />
+              {errors.name && (
+                <small className="text-danger">{errors.name}</small>
+              )}
             </div>
+
+            {/* Birth Date */}
             <div className="mb-2">
               <label>Birth Date</label>
-              <input type="date" className="form-control" name="birthDate" value={patientData.birthDate} onChange={handleChange} />
+              <input
+                type="date"
+                className="form-control"
+                name="birthDate"
+                value={patientData.birthDate}
+                onChange={handleChange}
+                required
+              />
+              {errors.birthDate && (
+                <small className="text-danger">{errors.birthDate}</small>
+              )}
             </div>
+
+            {/* Gender (select) */}
             <div className="mb-2">
               <label>Gender</label>
-              <input type="text" className="form-control" name="gender" value={patientData.gender} onChange={handleChange} />
+              <select
+                className="form-control"
+                name="gender"
+                value={patientData.gender}
+                onChange={handleChange}
+                required
+              >
+                <option value="">-- Select Gender --</option>
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+              </select>
+              {errors.gender && (
+                <small className="text-danger">{errors.gender}</small>
+              )}
             </div>
+
+            {/* Address */}
             <div className="mb-2">
               <label>Address</label>
-              <input type="text" className="form-control" name="address" value={patientData.address} onChange={handleChange} />
+              <input
+                type="text"
+                className="form-control"
+                name="address"
+                value={patientData.address}
+                onChange={handleChange}
+                required
+              />
+              {errors.address && (
+                <small className="text-danger">{errors.address}</small>
+              )}
             </div>
+
+            {/* Phone (numbers only) */}
             <div className="mb-2">
               <label>Phone</label>
-              <input type="text" className="form-control" name="phone" value={patientData.phone} onChange={handleChange} />
+              <input
+                type="text"
+                className="form-control"
+                name="phone"
+                value={patientData.phone}
+                onChange={handleChange}
+                required
+              />
+              {errors.phone && (
+                <small className="text-danger">{errors.phone}</small>
+              )}
             </div>
+
+            {/* Symptoms */}
             <div className="mb-2">
               <label>Symptoms</label>
-              <textarea className="form-control" name="symptoms" value={patientData.symptoms} onChange={handleChange}></textarea>
+              <textarea
+                className="form-control"
+                name="symptoms"
+                value={patientData.symptoms}
+                onChange={handleChange}
+                required
+              />
+              {errors.symptoms && (
+                <small className="text-danger">{errors.symptoms}</small>
+              )}
             </div>
+
+            {/* Medical History */}
             <div className="mb-2">
               <label>Medical History</label>
-              <textarea className="form-control" name="medicalHistory" value={patientData.medicalHistory} onChange={handleChange}></textarea>
+              <textarea
+                className="form-control"
+                name="medicalHistory"
+                value={patientData.medicalHistory}
+                onChange={handleChange}
+                required
+              />
+              {errors.medicalHistory && (
+                <small className="text-danger">{errors.medicalHistory}</small>
+              )}
             </div>
+
+            {/* Allergies */}
             <div className="mb-2">
               <label>Allergies</label>
-              <textarea className="form-control" name="allergies" value={patientData.allergies} onChange={handleChange}></textarea>
+              <textarea
+                className="form-control"
+                name="allergies"
+                value={patientData.allergies}
+                onChange={handleChange}
+                required
+              />
+              {errors.allergies && (
+                <small className="text-danger">{errors.allergies}</small>
+              )}
             </div>
+
+            {/* Medications */}
             <div className="mb-2">
               <label>Medications</label>
-              <textarea className="form-control" name="medications" value={patientData.medications} onChange={handleChange}></textarea>
+              <textarea
+                className="form-control"
+                name="medications"
+                value={patientData.medications}
+                onChange={handleChange}
+                required
+              />
+              {errors.medications && (
+                <small className="text-danger">{errors.medications}</small>
+              )}
             </div>
+
+            {/* Family History */}
             <div className="mb-2">
               <label>Family History</label>
-              <textarea className="form-control" name="familyHistory" value={patientData.familyHistory} onChange={handleChange}></textarea>
+              <textarea
+                className="form-control"
+                name="familyHistory"
+                value={patientData.familyHistory}
+                onChange={handleChange}
+                required
+              />
+              {errors.familyHistory && (
+                <small className="text-danger">{errors.familyHistory}</small>
+              )}
             </div>
+
+            <Modal.Footer>
+              <AnamnesisPDF patient={patientData} />
+              <Button variant="secondary" onClick={() => setShowForm(false)}>
+                Close
+              </Button>
+              <Button variant="success" type="submit">
+                Save Form
+              </Button>
+            </Modal.Footer>
           </form>
         </Modal.Body>
-        <Modal.Footer>
-          <AnamnesisPDF patient={patientData} />
-          <Button variant="secondary" onClick={() => setShowForm(false)}>Close</Button>
-        </Modal.Footer>
       </Modal>
     </>
   );

@@ -4,7 +4,7 @@
   padding: 2rem;
   text-align: center;
 }
-html, #root {
+html, #root ,body{
   height: 100%;
   margin: 0;
   padding: 0;

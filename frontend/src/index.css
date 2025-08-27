@@ -23,12 +23,10 @@ a:hover {
 }
 
 body {
-  margin: 0;
-  /* display: flex; */
-  place-items: center;
-  max-width: 100%;
-  /* min-width: 320px;
-  min-height: 100vh; */
+  display: flex;          /* أو grid حسب رغبتك */
+  flex-direction: column;  /* إذا تريد أن يكون المحتوى عمودي */
+  min-height: 100vh;       /* يملأ ارتفاع الشاشة */
+  width: 100%;
 }
 
 h1 {

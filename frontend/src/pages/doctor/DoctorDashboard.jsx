@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Container, Table, Button, Modal, Badge, Row, Col, Form } from "react-bootstrap";
-import { getMyAppointments, cancelAppointment } from "../../api/appointments";
+import { getDoctorAppointments, cancelAppointment } from "../../api/appointments";
 
 export default function DoctorDashboard() {
   const [appointments, setAppointments] = useState([]);
@@ -8,13 +8,16 @@ export default function DoctorDashboard() {
   const [selectedAppointment, setSelectedAppointment] = useState(null);
   const [filter, setFilter] = useState("all");
 
+
+
+  
   useEffect(() => {
     fetchAppointments();
   }, []);
 
   const fetchAppointments = async () => {
     try {
-      const data = await getMyAppointments();
+      const data = await getDoctorAppointments();
       setAppointments(data);
     } catch (err) {
       console.error(err);
