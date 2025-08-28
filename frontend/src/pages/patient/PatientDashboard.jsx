@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Container, Table, Button, Form } from 'react-bootstrap';
 import { toast } from 'react-toastify';
-import { getAppointmentsByPatient, bookAppointment, cancelAppointment } from '../../api/appointments';
+import { getMyAppointments, bookAppointment, cancelAppointment } from '../../api/appointments';
 import { getDoctors } from '../../api/doctors';
 import moment from 'moment';
 
@@ -12,7 +12,6 @@ export default function PatientDashboard() {
   const [selectedDate, setSelectedDate] = useState("");
   const [availableTimes, setAvailableTimes] = useState([]);
   const [selectedTime, setSelectedTime] = useState("");
-  const [patientId] = useState(19); // يمكن جلبه من JWT لاحقًا
 
   useEffect(() => {
     fetchAppointments();
@@ -21,18 +20,21 @@ export default function PatientDashboard() {
 
   const fetchAppointments = async () => {
     try {
-      const data = await getAppointmentsByPatient(patientId);
+      const data = await getMyAppointments(); // يعتمد على JWT
       setAppointments(data);
     } catch (err) {
       toast.error("Failed to load appointments");
+      console.error(err);
     }
   };
 
   const fetchDoctors = async () => {
     try {
-      setDoctors(await getDoctors());
+      const data = await getDoctors();
+      setDoctors(data);
     } catch (err) {
       console.error(err);
+      toast.error("Failed to load doctors");
     }
   };
 
@@ -96,6 +98,7 @@ export default function PatientDashboard() {
       setAvailableTimes([]);
     } catch (err) {
       toast.error(err.response?.data?.error || "Booking failed");
+      console.error(err);
     }
   };
 
@@ -106,6 +109,7 @@ export default function PatientDashboard() {
       fetchAppointments();
     } catch (err) {
       toast.error("Cancel failed");
+      console.error(err);
     }
   };
 

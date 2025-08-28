@@ -33,7 +33,7 @@ app.get('/', (req, res) => res.send('API is running'));
 app.get('/api/doctors/ping', (req, res) => res.send('pong'));
 console.log(listEndpoints(app));
 
-sequelize.sync({ force: false }) // استخدم { force: true } لإعادة إنشاء الجداول أثناء التطوي
+sequelize.sync({ force: false}) // استخدم { force: true } لإعادة إنشاء الجداول أثناء التطوي
   .then(async () =>  {
     console.log("calling Seed.js...");
  

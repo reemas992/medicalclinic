@@ -7,8 +7,9 @@ const moment = require('moment');
 // ✅ إرجاع مواعيد المريض
 exports.getAppointmentsByPatient = async (req, res) => {
   try {
-    const { id } = req.params;
 
+const id = req.params.id || req.user?.id; // ← id من params أو من JWT
+  if (!id) return res.status(400).json({ error: "Patient ID required" });
     const appointments = await Appointment.findAll({
       where: { patientId: id },
       order: [['date', 'ASC']],
@@ -37,13 +38,16 @@ exports.getAppointmentsByPatient = async (req, res) => {
 
 exports.bookAppointment = async (req,res) => {
   try {
-    const { doctorId, date } = req.body;
-    const patientId = req.user.id;
+    let patientId = req.user?.id; // من JWT
+  if (req.body.patientId && req.user.role === 'admin') {
+    // فقط admin يمكنه حجز للآخرين
+    patientId = req.body.patientId;
+  }
 
-    if (!doctorId || !date) return res.status(400).json({ error: "Doctor ID and date required" });
+  const { doctorId, date } = req.body;
+  if (!doctorId || !date || !patientId) return res.status(400).json({ error: "Doctor ID, date, and patient required" });
 
-    const appointmentDate = moment(date);
-
+  const appointmentDate = moment(date);
     // Check existing appointments for same slot
     const conflict = await Appointment.findOne({
       where: {
