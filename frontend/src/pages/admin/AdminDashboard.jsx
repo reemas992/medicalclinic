@@ -87,14 +87,18 @@ export default function AdminDashboard() {
   };
 
   // Doctor
-  const handleEditDoctor = (doc) => {
-    setSelectedDoctor({
-      id: doc.id,
-      specialty: doc.specialty,
-      experience_years: doc.experience_years,
-    });
-    setShowDoctorModal(true);
-  };
+ const handleEditDoctor = (doc) => {
+  setSelectedDoctor({
+    id: doc.id,
+    name: doc.user?.name || doc.name || "",
+    userId: doc.user?.id || "",
+    specialty: doc.specialty,
+    experience_years: doc.experience_years,
+    image: doc.image || ""
+  });
+  setShowDoctorModal(true);
+};
+
 
   const handleUpdateDoctor = async () => {
     try {
@@ -109,7 +113,8 @@ export default function AdminDashboard() {
     const created = await addDoctor(newDoctor);
     setDoctors(prev => [created, ...prev]);
     setShowAddDoctorModal(false);
-    setNewDoctor({ userId: "", name: "", specialty: "", experience_years: 0 });
+   setNewDoctor({ userId: "", name: "", specialty: "", experience_years: 0, image: "" });
+
   } catch (err) {
     console.error(err);
   }
@@ -161,7 +166,7 @@ export default function AdminDashboard() {
                   <td>{a.status}</td>
                   <td>
                     <Button size="sm" variant="success" className="me-2"
-                      onClick={() => handleStatusUpdate(a.id, "confirmed")}>Confirm</Button>
+                      onClick={() => handleStatusUpdate(a.id, "completed")}>Confirm</Button>
                     <Button size="sm" variant="danger"
                       onClick={() => handleStatusUpdate(a.id, "cancelled")}>Cancel</Button>
                   </td>
@@ -214,9 +219,20 @@ export default function AdminDashboard() {
                   <td>{job.description}</td>
                   <td>{job.requirements}</td>
                   <td>
-                    <Button size="sm" variant="warning" className="me-2" onClick={() => handleEditJob(job)}>Edit</Button>
-                    <Button size="sm" variant="danger" onClick={() => handleDeleteClick("job", job.id)}>Delete</Button>
-                  </td>
+    <Button
+     size="sm" variant="warning" className="me-2"
+      onClick={() => handleEditJob(job)}
+    >
+      Edit
+    </Button>
+    <Button
+      size="sm"
+      variant="danger" 
+      onClick={() => handleDeleteClick("job", job.id)}
+    >
+      Delete
+    </Button>
+  </td>
                 </tr>
               ))}
             </tbody>

@@ -40,3 +40,4 @@ export const deleteDoctor = async (id) => {
   const res = await api.delete(`/doctors/${id}`);
   return res.data;
 };
+
