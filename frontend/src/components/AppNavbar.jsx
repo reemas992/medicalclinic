@@ -83,7 +83,7 @@ export default function AppNavbar() {
               </Button>
 
               <span className="fw-bold text-primary">
-                Welcome {user.username} ({user.role})
+                Welcome {user.name} ({user.role})
               </span>
             </>
           )}

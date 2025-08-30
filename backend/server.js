@@ -6,15 +6,15 @@ const { sequelize } = require('./models');
 const authRoutes = require('./routes/authRoutes');
 const doctorRoutes = require('./routes/doctorRoutes');
 const appointmentRoutes = require('./routes/appointmentRoutes');
-const adminRoutes = require('./routes/adminRoutes');
-const alertRoutes = require('./routes/alertRoutes');
-const scheduleRoutes = require('./routes/scheduleRoutes');
+
 const seed = require('./seeders/seed');
 const evaluationRoutes = require("./routes/evaluationRoutes");
 const listEndpoints = require('express-list-endpoints');
 const jobsRoutes = require('./routes/jobRoutes');
 const holidayRoutes=require('./routes/holidayRoutes');
 const { fa } = require('@faker-js/faker');
+const slotRoutes = require('./routes/slotRoutes');
+
 const app = express();
 app.use(cors());
 app.use(express.json());
@@ -23,14 +23,14 @@ app.use(express.json());
 app.use("/api/auth", authRoutes);
 app.use("/api/doctors", doctorRoutes);
 app.use("/api/appointments", appointmentRoutes);
-app.use("/api/admin", adminRoutes);
-app.use("/api/alerts", alertRoutes); 
-app.use("/api/schedule", scheduleRoutes);
+
+ 
+
 app.use("/api/evaluations", evaluationRoutes); // ratings
 app.use('/api/jobs', jobsRoutes);
 app.use('/api', holidayRoutes);
 app.get('/', (req, res) => res.send('API is running'));
-app.get('/api/doctors/ping', (req, res) => res.send('pong'));
+app.use('/api/slots', slotRoutes);
 console.log(listEndpoints(app));
 
 sequelize.sync({ force: false}) // استخدم { force: true } لإعادة إنشاء الجداول أثناء التطوي

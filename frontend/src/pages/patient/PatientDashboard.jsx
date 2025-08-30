@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Container, Table, Button, Form } from 'react-bootstrap';
-import { toast } from 'react-toastify';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import { getMyAppointments, bookAppointment, cancelAppointment } from '../../api/appointments';
 import { getDoctors } from '../../api/doctors';
 import moment from 'moment';
@@ -20,7 +21,7 @@ export default function PatientDashboard() {
 
   const fetchAppointments = async () => {
     try {
-      const data = await getMyAppointments(); // يعتمد على JWT
+      const data = await getMyAppointments();
       setAppointments(data);
     } catch (err) {
       toast.error("Failed to load appointments");
@@ -33,8 +34,8 @@ export default function PatientDashboard() {
       const data = await getDoctors();
       setDoctors(data);
     } catch (err) {
-      console.error(err);
       toast.error("Failed to load doctors");
+      console.error(err);
     }
   };
 
@@ -50,7 +51,11 @@ export default function PatientDashboard() {
     const date = e.target.value;
     setSelectedDate(date);
     setSelectedTime("");
-    if (!selectedDoctor) return;
+
+    if (!selectedDoctor) {
+      toast.warning("Please select a doctor first");
+      return;
+    }
 
     const dayOfWeek = moment(date).day();
     const schedule = selectedDoctor.schedules?.find(s => s.dayOfWeek === dayOfWeek);
@@ -67,11 +72,13 @@ export default function PatientDashboard() {
 
     while (start.isBefore(end) && times.length < 8) {
       const t = start.format("HH:mm");
+
       const inBreak = schedule.breaks?.some(b => {
         const bStart = moment(b.start, "HH:mm:ss");
         const bEnd = moment(b.end, "HH:mm:ss");
         return start.isBetween(bStart, bEnd, null, "[)");
       });
+
       if (!inBreak) times.push(t);
       start.add(1, "hours");
     }
@@ -80,18 +87,21 @@ export default function PatientDashboard() {
       .filter(a => a.doctorId === selectedDoctor.id && moment(a.date).format('YYYY-MM-DD') === date)
       .map(a => moment(a.date).format('HH:mm'));
 
-    setAvailableTimes(times.filter(t => !booked.includes(t)));
+    const finalTimes = times.filter(t => !booked.includes(t));
+    setAvailableTimes(finalTimes);
   };
 
   const handleBook = async () => {
     if (!selectedDoctor || !selectedDate || !selectedTime) {
-      toast.warning("Select all fields");
+      toast.warning("Select doctor, date, and time");
       return;
     }
+
     try {
       const datetime = moment(`${selectedDate} ${selectedTime}`, "YYYY-MM-DD HH:mm").toISOString();
       await bookAppointment({ doctorId: selectedDoctor.id, date: datetime });
-      toast.success("Appointment booked!");
+      toast.success("Appointment booked successfully!");
+
       fetchAppointments();
       setSelectedDate("");
       setSelectedTime("");
@@ -108,13 +118,14 @@ export default function PatientDashboard() {
       toast.info("Appointment cancelled");
       fetchAppointments();
     } catch (err) {
-      toast.error("Cancel failed");
+      toast.error("Failed to cancel appointment");
       console.error(err);
     }
   };
 
   return (
     <Container className="py-5">
+      <ToastContainer position="top-right" autoClose={3000} />
       <h2>My Appointments</h2>
       <Table striped bordered hover>
         <thead>
@@ -134,7 +145,9 @@ export default function PatientDashboard() {
               <td>{moment(a.date).format("YYYY-MM-DD HH:mm")}</td>
               <td>{a.status}</td>
               <td>
-                {a.status === "scheduled" && <Button size="sm" onClick={() => handleCancel(a.id)}>Cancel</Button>}
+                {a.status === "scheduled" && (
+                  <Button size="sm" onClick={() => handleCancel(a.id)}>Cancel</Button>
+                )}
               </td>
             </tr>
           ))}
@@ -147,34 +160,36 @@ export default function PatientDashboard() {
           <Form.Label>Doctor</Form.Label>
           <Form.Select onChange={e => handleDoctorChange(e.target.value)}>
             <option value="">--Select--</option>
-            {doctors.map(d =>
+            {doctors.map(d => (
               <option key={d.id} value={d.id}>
                 {d.user.name} ({d.specialty})
               </option>
-            )}
+            ))}
           </Form.Select>
         </Form.Group>
 
-        {selectedDoctor && <>
-          <Form.Group className="mb-2">
-            <Form.Label>Date</Form.Label>
-            <Form.Control type="date" value={selectedDate} onChange={handleDateChange} />
-          </Form.Group>
-
-          {availableTimes.length > 0 ? (
+        {selectedDoctor && (
+          <>
             <Form.Group className="mb-2">
-              <Form.Label>Time</Form.Label>
-              <Form.Select value={selectedTime} onChange={e => setSelectedTime(e.target.value)}>
-                <option value="">--Select--</option>
-                {availableTimes.map(t => <option key={t} value={t}>{t}</option>)}
-              </Form.Select>
+              <Form.Label>Date</Form.Label>
+              <Form.Control type="date" value={selectedDate} onChange={handleDateChange} />
             </Form.Group>
-          ) : (
-            selectedDate && <p className="text-danger">Doctor is not available on this day</p>
-          )}
 
-          <Button onClick={handleBook} disabled={availableTimes.length === 0}>Book Appointment</Button>
-        </>}
+            {availableTimes.length > 0 ? (
+              <Form.Group className="mb-2">
+                <Form.Label>Time</Form.Label>
+                <Form.Select value={selectedTime} onChange={e => setSelectedTime(e.target.value)}>
+                  <option value="">--Select--</option>
+                  {availableTimes.map(t => <option key={t} value={t}>{t}</option>)}
+                </Form.Select>
+              </Form.Group>
+            ) : (
+              selectedDate && <p className="text-danger">Doctor is not available on this day</p>
+            )}
+
+            <Button onClick={handleBook} disabled={availableTimes.length === 0}>Book Appointment</Button>
+          </>
+        )}
       </Form>
     </Container>
   );

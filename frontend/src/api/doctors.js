@@ -8,12 +8,6 @@ export const getDoctors = async () => {
   return res.data;
 };
 
-// 📌 Get single doctor by ID (optional)
-export const getDoctorById = async (id) => {
-  const res = await api.get(`/doctors/${id}`);
-  return res.data;
-};
-
 // 📌 جلب طبيب معين حسب الـ ID
 export const getDoctor = async (id) => {
   try {

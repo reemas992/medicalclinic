@@ -51,7 +51,7 @@ export default function DoctorDashboard() {
 
   // Statistics
   const total = appointments.length;
-  const upcoming = appointments.filter(a => a.status === "upcoming").length;
+  const upcoming = appointments.filter(a => a.status === "scheduled").length;
   const cancelled = appointments.filter(a => a.status === "cancelled").length;
 
   return (
@@ -68,7 +68,7 @@ export default function DoctorDashboard() {
         <Col xs="auto">
           <Form.Select value={filter} onChange={(e) => setFilter(e.target.value)}>
             <option value="all">All</option>
-            <option value="upcoming">Upcoming</option>
+            <option value="scheduled">Upcoming</option>
             <option value="cancelled">Cancelled</option>
           </Form.Select>
         </Col>
@@ -93,9 +93,11 @@ export default function DoctorDashboard() {
               <td>
                 {a.status === "cancelled" ? (
                   <Badge bg="danger">Cancelled</Badge>
-                ) : (
-                  <Badge bg="success">{a.status}</Badge>
-                )}
+                   ) : a.status === "scheduled" ? (
+                  <Badge bg="success">Upcoming</Badge>
+                  ) : (
+                  <Badge bg="secondary">{a.status}</Badge>
+                  )}
               </td>
               <td>
                 {a.status !== "cancelled" && (

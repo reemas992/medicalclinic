@@ -1,4 +1,4 @@
-const { Appointment, Doctor, DoctorSchedule, Holiday, User } = require('../models');
+const { Appointment, Doctor, User } = require('../models');
 const { Op } = require('sequelize');
 const moment = require('moment');
 
@@ -114,10 +114,6 @@ exports.getAllAppointments = async (req, res) => {
   }
 };
 
-
-
-
-// Cancel appointment
 // Cancel appointment
 exports.cancelAppointment = async (req, res) => {
   try {
@@ -126,7 +122,7 @@ exports.cancelAppointment = async (req, res) => {
 
     const user = req.user;
 
-    // تحقق من الصلاحيات
+  
     let isAuthorized = false;
 
     if (user.role === 'admin') {

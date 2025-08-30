@@ -11,8 +11,7 @@ const generateToken = (id, role) => {
 // Register user
 exports.register = async (req, res) => {
   try {
-    const { name, email, password, role, phone, address } = req.body;
-    
+    const { name, email, password, role} = req.body;
     // Check if user exists
     const userExists = await User.findOne({ where: { email } });
     if (userExists) {
@@ -24,14 +23,12 @@ exports.register = async (req, res) => {
       name,
       email,
       password,
-      role,
-      phone,
-      address
+      role
     });
 
     // Remove password from response
     const userResponse = { ...user.toJSON() };
-    delete userResponse.password;
+  
 
     res.status(201).json({
       user: userResponse,
@@ -60,7 +57,7 @@ exports.login = async (req, res) => {
 
     // Remove password from response
     const userResponse = { ...user.toJSON() };
-    delete userResponse.password;
+   
 
     res.json({
       user: userResponse,
@@ -83,23 +80,3 @@ exports.getMe = async (req, res) => {
   }
 };
 
-// Update user profile
-exports.updateProfile = async (req, res) => {
-  try {
-    const { name, phone, address } = req.body;
-    const user = await User.findByPk(req.user.id);
-    
-    if (name) user.name = name;
-    if (phone) user.phone = phone;
-    if (address) user.address = address;
-    
-    await user.save();
-    
-    const userResponse = { ...user.toJSON() };
-    delete userResponse.password;
-    
-    res.json(userResponse);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-};

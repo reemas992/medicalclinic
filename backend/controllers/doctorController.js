@@ -91,6 +91,7 @@ const updateDoctor = async (req, res) => {
   }
 };
 
+
 // Delete doctor
 const deleteDoctor = async (req, res) => {
   try {

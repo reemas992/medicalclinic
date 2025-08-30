@@ -33,3 +33,39 @@ exports.createHoliday = async (req, res) => {
         res.status(500).json({ message: 'Failed to create holiday' });
     }
 };
+// Update an existing holiday
+exports.updateHoliday = async (req, res) => {
+    const { id } = req.params;
+    const { date, reason } = req.body;
+
+    try {
+        const holiday = await Holiday.findByPk(id);
+        if (!holiday) {
+            return res.status(404).json({ message: 'Holiday not found' });
+        }
+
+        await holiday.update({ date, reason });
+        res.json(holiday);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Failed to update holiday' });
+    }
+};
+
+// Delete a holiday
+exports.deleteHoliday = async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        const holiday = await Holiday.findByPk(id);
+        if (!holiday) {
+            return res.status(404).json({ message: 'Holiday not found' });
+        }
+
+        await holiday.destroy();
+        res.json({ message: 'Holiday deleted successfully' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Failed to delete holiday' });
+    }
+};

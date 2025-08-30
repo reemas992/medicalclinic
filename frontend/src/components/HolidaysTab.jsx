@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { getHolidays, addHoliday } from "../api/holidays";
 import { Table, Button, Form, Row, Col, Modal } from "react-bootstrap";
 import api from "../api/axios";
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const HolidaysTab = () => {
   const [holidays, setHolidays] = useState([]);
@@ -18,16 +20,27 @@ const HolidaysTab = () => {
   }, []);
 
   const fetchHolidays = async () => {
-    const data = await getHolidays();
-    setHolidays(data);
+    try {
+      const data = await getHolidays();
+      setHolidays(data);
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to fetch holidays");
+    }
   };
 
   const handleAdd = async (e) => {
     e.preventDefault();
-    if (!form.date) return alert("Please select a date");
-    await addHoliday(form);
-    setForm({ date: "", reason: "" });
-    fetchHolidays();
+    if (!form.date) return toast.error("Please select a date");
+    try {
+      await addHoliday(form);
+      setForm({ date: "", reason: "" });
+      fetchHolidays();
+      toast.success("Holiday added successfully!");
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to add holiday");
+    }
   };
 
   const handleEditClick = (holiday) => {
@@ -40,8 +53,10 @@ const HolidaysTab = () => {
       await api.put(`/holiday/${selectedHoliday.id}`, selectedHoliday);
       setShowEditModal(false);
       fetchHolidays();
+      toast.success("Holiday updated successfully!");
     } catch (err) {
       console.error(err);
+      toast.error("Failed to update holiday");
     }
   };
 
@@ -56,8 +71,10 @@ const HolidaysTab = () => {
       setShowDeleteModal(false);
       setHolidayToDelete(null);
       fetchHolidays();
+      toast.success("Holiday deleted successfully!");
     } catch (err) {
       console.error(err);
+      toast.error("Failed to delete holiday");
     }
   };
 
@@ -162,7 +179,8 @@ const HolidaysTab = () => {
         <Modal.Header closeButton>
           <Modal.Title>Confirm Delete</Modal.Title>
         </Modal.Header>
-        <Modal.Body>Are you sure you want to delete this holiday{holidayToDelete?.date}?
+        <Modal.Body>
+          Are you sure you want to delete this holiday {holidayToDelete?.date}?
         </Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={() => setShowDeleteModal(false)}>
@@ -173,6 +191,9 @@ const HolidaysTab = () => {
           </Button>
         </Modal.Footer>
       </Modal>
+
+      {/* ✅ ToastContainer */}
+      <ToastContainer position="top-right" autoClose={3000} />
     </div>
   );
 };

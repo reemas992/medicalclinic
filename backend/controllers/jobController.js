@@ -17,21 +17,6 @@ exports.getJobs = async (req, res) => {
   }
 };
 
-// Get job by ID
-exports.getJob = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const job = await Job.findByPk(id);
-    
-    if (!job) {
-      return res.status(404).json({ error: 'Job not found' });
-    }
-    
-    res.json(job);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-};
 
 // Create new job
 exports.createJob = async (req, res) => {

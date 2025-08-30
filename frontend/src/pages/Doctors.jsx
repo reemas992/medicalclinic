@@ -2,12 +2,11 @@ import React, { useEffect, useState } from "react";
 import { Container, Row, Col } from "react-bootstrap";
 import DoctorCard from "../components/DoctorCard";
 import { getDoctors } from "../api/doctors";
-import { bookAppointment } from "../api/appointments";
-import ToastMessage from "../components/ToastMessage";
+import { toast } from "react-toastify";
+import 'react-toastify/dist/ReactToastify.css';
 
 export default function Doctors() {
   const [doctors, setDoctors] = useState([]);
-  const [toast, setToast] = useState({ show: false, message: "", variant: "success" });
 
   useEffect(() => {
     const fetchDoctors = async () => {
@@ -16,19 +15,11 @@ export default function Doctors() {
         setDoctors(res);
       } catch (err) {
         console.error(err);
+        toast.error("Failed to load doctors"); 
       }
     };
     fetchDoctors();
   }, []);
-
-  const handleBook = async (doctorId) => {
-    try {
-      await bookAppointment({ doctorId });
-      setToast({ show: true, message: "Appointment booked successfully!", variant: "success" });
-    } catch (err) {
-      setToast({ show: true, message: "Failed to book appointment", variant: "danger" });
-    }
-  };
 
   return (
     <Container className="py-5">
@@ -36,16 +27,10 @@ export default function Doctors() {
       <Row>
         {doctors.map((doc) => (
           <Col md={4} key={doc.id}>
-            <DoctorCard doctor={doc} onBook={handleBook} />
+            <DoctorCard doctor={doc} />
           </Col>
         ))}
       </Row>
-      <ToastMessage
-        show={toast.show}
-        onClose={() => setToast({ ...toast, show: false })}
-        message={toast.message}
-        variant={toast.variant}
-      />
     </Container>
   );
 }

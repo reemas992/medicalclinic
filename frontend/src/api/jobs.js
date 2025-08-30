@@ -13,17 +13,6 @@ export const getJobs = async (status = "") => {
   }
 };
 
-// 📌 Get single job by ID
-export const getJob = async (id) => {
-  try {
-    const res = await api.get(`/jobs/${id}`);
-    return res.data;
-  } catch (err) {
-    console.error(`Failed to fetch job ${id}:`, err);
-    throw err;
-  }
-};
-
 // 📌 Create new job (admin only)
 export const createJob = async (data) => {
   try {

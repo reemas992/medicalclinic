@@ -39,3 +39,13 @@ export const getDoctorAppointments = async () => {
   const res = await api.get("/appointments/my-doctor");
   return res.data;
 };
+
+export const getAvailableSlots = async (doctorId, date) => {
+  try {
+    const { data } = await api.get(`/slots/${doctorId}?date=${date}`);
+    return data.slots; // [{ start: "09:00", isBooked: false }, ...]
+  } catch (err) {
+    console.error("Failed to fetch slots", err);
+    throw err;
+  }
+};

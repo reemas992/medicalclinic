@@ -31,7 +31,7 @@ const LocationPage = () => {
           <Card className="p-3 shadow-m">
             <h5><FaBus className="me-2"/> By Public Transport</h5>
             <p>
-              <b>Stop:</b> wunderStraße / Ecke Barbara-Strasse<br/>
+              <b>Stop:</b>Bolmeen Str HaltStelle<br/>
               Tram lines: 12 and 8<br/>
               Bus lines:88 
             </p>
@@ -42,7 +42,7 @@ const LocationPage = () => {
         </Col>
       </Row>
 
-      {/* Optional images like in your screenshot */}
+    
       <Row>
         <Col md={6}>
           <img 

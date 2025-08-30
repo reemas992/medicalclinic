@@ -26,7 +26,7 @@ export default function Jobs() {
             <Card.Title className="text-secondary">{job.title}</Card.Title>
             <Card.Text className="text-muted">{job.description}</Card.Text>
             <Card.Subtitle className="text-muted">
-              Location: {job.location} | Posted: {new Date(job.createdAt).toLocaleDateString()}
+               Posted: {new Date(job.createdAt).toLocaleDateString()}
             </Card.Subtitle>
           </Card.Body>
         </Card>

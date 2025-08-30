@@ -28,7 +28,7 @@ const DoctorSchedule = sequelize.define('DoctorSchedule', {
   },
  
   breaks: {
-    type: DataTypes.JSON, // [{ start: "12:00:00", end: "13:00:00" }, ...]
+    type: DataTypes.JSON, 
     allowNull: true,
     defaultValue: []
   }

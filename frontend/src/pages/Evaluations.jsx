@@ -60,7 +60,7 @@ const EvaluationPage = () => {
     <Container className="py-4">
       <h2 className="mb-4">Clinic Evaluations</h2>
 
-      {/* Form to add or edit evaluation */}
+    
       <Form onSubmit={handleSubmit} className="mb-4">
         <Form.Group className="mb-3">
           <Form.Label>Rating</Form.Label>
@@ -121,9 +121,6 @@ const EvaluationPage = () => {
                 by: {ev.evaluator?.name || "Unknown"}
               </small>
 
-              {/* ✅ Show buttons only if: 
-                  - Admin can always see
-                  - Patient only on their evaluation */}
               {(user?.role === "admin" || user?.id === ev.userId) && (
                 <div className="mt-2">
                   <Button
