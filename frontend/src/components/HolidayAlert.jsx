@@ -24,7 +24,7 @@ const HolidayAlert = () => {
     fetchHoliday();
   }, []);
 
-  if (!holiday) return null; // ما في عطلة اليوم → لا تعرض شيء
+  if (!holiday) return null;
 
   return (
     <Alert variant="danger" className="text-center fw-bold">

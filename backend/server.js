@@ -19,21 +19,18 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// نستخدم فقط مسارات تبدأ بـ /api/ لمنع التكرار ولتنظيم أفضل
+
 app.use("/api/auth", authRoutes);
 app.use("/api/doctors", doctorRoutes);
 app.use("/api/appointments", appointmentRoutes);
-
- 
-
-app.use("/api/evaluations", evaluationRoutes); // ratings
+app.use("/api/evaluations", evaluationRoutes); 
 app.use('/api/jobs', jobsRoutes);
 app.use('/api', holidayRoutes);
 app.get('/', (req, res) => res.send('API is running'));
 app.use('/api/slots', slotRoutes);
 console.log(listEndpoints(app));
 
-sequelize.sync({ force: false}) // استخدم { force: true } لإعادة إنشاء الجداول أثناء التطوي
+sequelize.sync({ force: false}) 
   .then(async () =>  {
     console.log("calling Seed.js...");
  

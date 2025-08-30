@@ -29,11 +29,9 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/doctors" element={<Doctors />} />
-       
         <Route path="/jobs" element={<Jobs />} />
         <Route path="/services" element={<Service />} />
         <Route path="/location" element={<LocationPage />} />
-      
         <Route path="/evaluations" element={
           <ProtectedRoute>
             <Evaluations />

@@ -21,7 +21,7 @@ const HeroSection = () => {
   const handleChange = (e) => {
     const { name, value } = e.target;
 
-    // phone فقط أرقام
+
     if (name === "phone" && value !== "" && !/^\d+$/.test(value)) {
       return;
     }
@@ -49,7 +49,7 @@ const HeroSection = () => {
     e.preventDefault();
     if (validateForm()) {
       console.log("✅ Patient data submitted:", patientData);
-      // هنا ممكن تبعت البيانات للباك إند لاحقاً
+   
     }
   };
 

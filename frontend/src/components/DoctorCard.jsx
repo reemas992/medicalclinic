@@ -5,7 +5,7 @@ import { Card, Button } from "react-bootstrap";
 export default function DoctorCard({ doctor}) {
   return (
     <Card className="shadow-sm mb-3">
-      {/* صورة الطبيب */}
+   
       {doctor.image ? (
         <Card.Img 
           variant="top" 
